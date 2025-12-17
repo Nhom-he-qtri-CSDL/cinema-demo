@@ -1,0 +1,23 @@
+@import "tailwindcss";
+:root {
+  /* font chữ */
+  --font-family: "Poppins", sans-serif;
+  /* màu cơ bản */
+  --primary-color: #020023;
+  --secondary-color: #070089;
+  --success-color: #1dc61d;
+  --danger-color: #e21e1e;
+  --screen-shadow-color: rgba(74, 104, 255, 0.7);
+  --light-color: #ffffff;
+  --accent-color: #22CDB3;
+  /* màu nền */
+  --card-color: rgba(255, 255, 255, 0.2);
+  /* màu seat */
+  --selected-color: var(--danger-color);
+  --empty-color: var(--success-color);
+}
+
+html,
+body {
+  font-family: var(--font-family);
+}
