@@ -1,35 +1,61 @@
-import { LOGO, HOME_ICON, MYTICKET_ICON } from "../utils/constants";
-function Header() {
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import "../styles/header.css";
+
+const Header = () => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
-    <header className="bg-[var(--primary-color)] p-4 flex justify-between items-center border-b-1 border-solid border-[var(--light-color)]">
-      <img
-        src={LOGO.src}
-        alt={LOGO.alt}
-        width={LOGO.width}
-        height={LOGO.height}
-      />
-      <nav className="mr-4">
-        <ul className="flex space-x-6 items-center text-white font-semibold">
-          <li className="cursor-pointer">
-            <img
-              src={HOME_ICON.src}
-              alt={HOME_ICON.alt}
-              width={HOME_ICON.width}
-              height={HOME_ICON.height}
-            />
-          </li>
-          <li className="cursor-pointer">
-            <img
-              src={MYTICKET_ICON.src}
-              alt={MYTICKET_ICON.alt}
-              width={MYTICKET_ICON.width}
-              height={MYTICKET_ICON.height}
-            />
-          </li>
-        </ul>
-      </nav>
+    <header className="header">
+      <div className="header-container">
+        <Link to="/" className="logo">
+          <span className="logo-icon"></span>
+          <span className="logo-text">CineBook</span>
+        </Link>
+
+        <nav className="nav-menu">
+          <Link to="/" className="nav-link">
+            Home
+          </Link>
+          <Link to="/movies" className="nav-link">
+            Movies
+          </Link>
+          {user && (
+            <Link to="/my-tickets" className="nav-link">
+              My Tickets
+            </Link>
+          )}
+        </nav>
+
+        <div className="header-actions">
+          {user ? (
+            <div className="user-menu">
+              <span className="user-info">👤 {user.fullName}</span>
+              <button onClick={handleLogout} className="btn-logout">
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="auth-buttons">
+              <Link to="/signup" className="btn-signup">
+                Sign Up
+              </Link>
+              <Link to="/login" className="btn-signin">
+                Sign In
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
-}
+};
 
 export default Header;

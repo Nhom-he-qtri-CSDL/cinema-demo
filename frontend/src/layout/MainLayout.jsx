@@ -1,15 +1,19 @@
+import React from "react";
+import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
+import "../styles/layout.css";
 
-function MainLayout({ children }) {
+const MainLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="main-layout">
       <Header />
-      <main className="flex-grow bg-linear-to-b from-[var(--primary-color)] to-[var(--secondary-color)] py-[50px] px-[120px] text-[var(--light-color)] text-center">
-        {children}
+      <main className="main-content">
+        <Outlet />
       </main>
       <Footer />
     </div>
   );
-}
+};
+
 export default MainLayout;

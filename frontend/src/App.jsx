@@ -1,8 +1,16 @@
-// import Seats from "./pages/Seats.jsx";
-// import BookingResult from "./pages/BookingResult.jsx";
-// import MyTickets from "./pages/MyTickets.jsx";
+import React from "react";
+import AppRoutes from "./routes/AppRoutes";
+import { AuthProvider } from "./context/AuthContext";
+import { BookingProvider } from "./context/BookingContext";
+
 function App() {
-  // return <BookingResult success={false} />;
-  // return <MyTickets />;
+  return (
+    <AuthProvider>
+      <BookingProvider>
+        <AppRoutes />
+      </BookingProvider>
+    </AuthProvider>
+  );
 }
+
 export default App;
