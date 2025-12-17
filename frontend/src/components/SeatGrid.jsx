@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useContext, useEffect } from "react";
+import { BookingContext } from "../context/BookingContext";
 import Seat from "./Seat";
+import "../styles/seatgrid.css";
 
 // SeatGrid: tạo lưới ghế và quản lý trạng thái chọn ghế
-function SeatGrid({ rows = 5, cols = 8 }) {
-  // selectedSeats lưu tập id ghế đang được chọn (Set giúp tìm/xoá nhanh)
-  const [selectedSeats, setSelectedSeats] = useState(() => new Set());
+function SeatGrid({ rows = 5, cols = 8, onSeatsChange }) {
+  const { selectedSeats, addSeat, removeSeat } = useContext(BookingContext);
 
   // toggleSeat: bật/tắt trạng thái chọn cho ghế có id
-  // dùng updater function để tránh thay đổi trực tiếp state (immutability)
   const toggleSeat = (id) => {
-    setSelectedSeats((prev) => {
-      const next = new Set(prev); // tạo bản sao
-      if (next.has(id)) next.delete(id); // nếu đã chọn -> bỏ
-      else next.add(id); // nếu chưa chọn -> thêm
-      return next;
-    });
+    if (selectedSeats.includes(id)) {
+      removeSeat(id);
+    } else {
+      addSeat(id);
+    }
   };
+
+  // Notify parent component when seats change
+  useEffect(() => {
+    if (onSeatsChange) {
+      onSeatsChange(selectedSeats);
+    }
+  }, [selectedSeats, onSeatsChange]);
 
   // rowLabels: tạo nhãn hàng A, B, C,... dựa trên số hàng
   const rowLabels = Array.from({ length: rows }, (_, i) =>
@@ -32,14 +38,14 @@ function SeatGrid({ rows = 5, cols = 8 }) {
   // mỗi phần tử là <Seat /> truyền text, trạng thái selected và onClick
   return (
     <div
-      className="grid gap-8"
+      className="seat-grid"
       style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
     >
       {seats.map((id) => (
         <Seat
           key={id} // key cho list rendering
           text={id} // hiển thị id ghế trên nút
-          selected={selectedSeats.has(id)} // true nếu ghế nằm trong Set
+          selected={selectedSeats.includes(id)} // true nếu ghế có trong array
           onClick={() => toggleSeat(id)} // chuyển đổi trạng thái khi click
         />
       ))}

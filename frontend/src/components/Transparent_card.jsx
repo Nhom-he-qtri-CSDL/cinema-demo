@@ -1,12 +1,7 @@
-function TransparentCard({ children, className }) {
-  return (
-    <>
-      <div
-        className={`bg-[var(--card-color)] rounded-lg shadow-lg ${className}`}
-      >
-        {children}
-      </div>
-    </>
-  );
+import "../styles/transparent_card.css";
+
+function TransparentCard({ children, className = "" }) {
+  return <div className={`transparent-card ${className}`}>{children}</div>;
 }
+
 export default TransparentCard;

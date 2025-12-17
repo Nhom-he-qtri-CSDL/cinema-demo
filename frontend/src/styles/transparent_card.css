@@ -1,0 +1,9 @@
+/* Transparent Card Component */
+.transparent-card {
+  background-color: var(--card-color);
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}

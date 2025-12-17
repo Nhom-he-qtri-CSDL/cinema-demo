@@ -12,6 +12,7 @@ export const BookingProvider = ({ children }) => {
     seats: [],
     totalPrice: 0,
   });
+  const [tickets, setTickets] = useState([]);
 
   const addSeat = (seatId) => {
     if (!selectedSeats.includes(seatId)) {
@@ -31,6 +32,25 @@ export const BookingProvider = ({ children }) => {
     setBookingData({ ...bookingData, ...data });
   };
 
+  const saveTicket = (ticketData) => {
+    const newTicket = {
+      id: Date.now(),
+      movieName: ticketData.movie?.title || "Phim demo",
+      showTime: `${ticketData.show?.time || ""} ngày ${
+        ticketData.show?.date || ""
+      }`,
+      seats: ticketData.seats || [],
+      customerName:
+        ticketData.user?.username || ticketData.user?.email || "Khách hàng",
+      bookingDate:
+        ticketData.bookingDate || new Date().toLocaleDateString("vi-VN"),
+      totalPrice: ticketData.totalPrice || 0,
+      theater: ticketData.show?.theater || "",
+      format: ticketData.show?.format || "",
+    };
+    setTickets([newTicket, ...tickets]);
+  };
+
   return (
     <BookingContext.Provider
       value={{
@@ -42,6 +62,8 @@ export const BookingProvider = ({ children }) => {
         setCurrentShow,
         bookingData,
         updateBooking,
+        tickets,
+        saveTicket,
       }}
     >
       {children}

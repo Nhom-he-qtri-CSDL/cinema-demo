@@ -6,7 +6,7 @@ import "../styles/shows.css";
 
 const Shows = () => {
   const { user } = useContext(AuthContext);
-  const { setSelectedShow } = useContext(BookingContext);
+  const { setCurrentShow } = useContext(BookingContext);
   const navigate = useNavigate();
   const { movieId } = useParams();
 
@@ -46,13 +46,14 @@ const Shows = () => {
     },
   ];
 
-  const handleSelectShow = (showId) => {
+  const handleSelectShow = (show) => {
     if (!user) {
       navigate("/login");
       return;
     }
-    setSelectedShow(showId);
-    navigate(`/seats/${showId}`);
+    // Store complete show information
+    setCurrentShow(show);
+    navigate(`/seats/${show.id}`);
   };
 
   return (
@@ -82,7 +83,7 @@ const Shows = () => {
 
               <button
                 className="btn-select-show"
-                onClick={() => handleSelectShow(show.id)}
+                onClick={() => handleSelectShow(show)}
                 disabled={show.availableSeats === 0}
               >
                 {show.availableSeats > 0 ? "Select Show" : "Sold Out"}

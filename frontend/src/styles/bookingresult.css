@@ -1,0 +1,134 @@
+/* Booking Result Page */
+.booking-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.booking-result__status {
+  text-align: center;
+  background: var(--card-color);
+  border-radius: 8px;
+  padding: 28px;
+  width: 100%;
+  max-width: 450px;
+  transition: all 0.3s ease;
+}
+
+.booking-result__status--success {
+  border: 2px solid var(--success-color);
+  color: var(--success-color);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+}
+
+.booking-result__status--success:hover {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+
+.booking-result__status--error {
+  border: 2px solid var(--danger-color);
+  color: var(--danger-color);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+}
+
+.booking-result__status--error:hover {
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+}
+
+.booking-result__status h2 {
+  font-size: 24px;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.booking-result__status--success h2::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--success-color);
+  color: white;
+  font-size: 18px;
+}
+
+.booking-result__status--error h2::before {
+  content: "✕";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--danger-color);
+  color: white;
+  font-size: 18px;
+}
+
+.booking-result__details {
+  padding: 24px;
+  color: var(--light-color);
+  width: 100%;
+}
+
+.booking-result__info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booking-result__info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+}
+
+.booking-result__info-item span {
+  color: var(--light-color);
+  line-height: 1.5;
+}
+
+.booking-result > button {
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .booking-result {
+    padding: 12px;
+  }
+
+  .booking-result__status {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .booking-result__status h2 {
+    font-size: 20px;
+  }
+
+  .booking-result__status {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .booking-result__details {
+    padding: 20px;
+  }
+}

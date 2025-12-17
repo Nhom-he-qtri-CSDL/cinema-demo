@@ -1,0 +1,114 @@
+/* Seats Page */
+.seats-page {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 140px);
+}
+
+.seats-page__theater {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+}
+
+.seats-page__screen {
+  margin-bottom: 24px;
+  max-width: 500px;
+}
+
+.seats-page__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seats-page__empty-image {
+  display: none;
+}
+
+.seats-page__selected-card {
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  color: #ffffff;
+}
+
+.seats-page__selected-card > div:first-of-type {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color);
+  margin-bottom: 12px;
+}
+
+.seats-page__selected-card p {
+  line-height: 1.6;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.seats-page__selected-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.seats-page__user-card {
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+  padding: 14px;
+}
+
+.seats-page__user-card::before {
+  content: "👤";
+  display: block;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.seats-page__user-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.seats-page__book-button {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: 6px;
+  margin-top: 4px;
+  font-size: 16px !important;
+  height: 45px !important;
+  transition: all 0.3s ease;
+}
+
+.seats-page__book-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.seats-page__book-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .seats-page {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .seats-page__theater {
+    padding: 16px;
+  }
+
+  .seats-page__sidebar {
+    margin-top: 16px;
+  }
+}

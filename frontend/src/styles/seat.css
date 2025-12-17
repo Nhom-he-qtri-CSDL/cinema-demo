@@ -1,0 +1,43 @@
+/* Seat Component */
+.seat {
+  width: 45px;
+  height: 45px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.seat:hover {
+  transform: scale(1.08);
+  border-color: var(--primary-color);
+}
+
+.seat span {
+  font-size: 13px;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.seat--empty {
+  background-color: var(--empty-color);
+}
+
+.seat--empty:hover {
+  background-color: #7d8ca3;
+}
+
+.seat--selected {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  border-color: #22d3ee;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+}
+
+.seat--selected:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.8);
+}

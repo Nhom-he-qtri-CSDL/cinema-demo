@@ -22,17 +22,21 @@ export default function Button({
   const bg = VARIANT_MAP[variant] || VARIANT_MAP.success;
   const style = {
     backgroundColor: bg,
-    height: "60px",
+    height: "45px",
+    minHeight: "45px",
     color: "#fff",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "0 20px",
-    borderRadius: "8px",
+    padding: "0 24px",
+    borderRadius: "6px",
     border: "none",
     cursor: disabled ? "not-allowed" : "pointer",
-    fontSize: "20px",
+    fontSize: "16px",
     fontWeight: 600,
+    transition: "all 0.3s ease",
+    boxShadow: disabled ? "none" : "0 2px 8px rgba(0, 0, 0, 0.2)",
+    opacity: disabled ? 0.5 : 1,
   };
 
   return (
@@ -41,7 +45,19 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       style={style}
-      className={className}
+      className={`button ${className}`}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.2)";
+        }
+      }}
     >
       {children}
     </button>

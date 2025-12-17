@@ -18,6 +18,17 @@
   --accent-cyan: #00d4ff;
   --accent-purple: #a855f7;
   --accent-pink: #ec4899;
+
+  /* Additional colors for cinema app */
+  --light-color: #ffffff;
+  --card-color: rgba(40, 45, 75, 0.95);
+  --card-border: rgba(100, 120, 180, 0.4);
+  --success-color: #04ff00;
+  --danger-color: #df1919;
+  --accent-color: #f59e0b;
+  --empty-color: #64748b;
+  --selected-color: #06b6d4;
+  --info-bg: rgba(0, 212, 255, 0.05);
 }
 
 html,

@@ -1,16 +1,18 @@
+import "../styles/seat.css";
+
 function Seat({ text, onClick, selected = false }) {
-  const stateColor = selected
-    ? "bg-[var(--selected-color)]"
-    : "bg-[var(--empty-color)]";
+  const seatClass = selected ? "seat seat--selected" : "seat seat--empty";
+
   return (
     <button
       type="button"
-      className={`w-[50px] h-[50px] ${stateColor} rounded flex items-center justify-center cursor-pointer hover:scale-105 transition-transform`}
+      className={seatClass}
       onClick={onClick}
       aria-pressed={selected}
     >
-      <span className="text-sm">{text}</span>
+      <span>{text}</span>
     </button>
   );
 }
+
 export default Seat;
