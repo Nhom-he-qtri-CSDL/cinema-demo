@@ -6,7 +6,7 @@ create table users (
 
 create table movies (
 	movie_id	serial primary key,
-	tittle		varchar(100) not null,
+	title		varchar(100) not null,
 	duration	int,
 	description	text
 );
@@ -42,10 +42,10 @@ create table bookings (
 	constraint unique_seat_booking unique (seat_id)
 );
 
-INSERT INTO users (username, password) VALUES 
-('user1', 'password123'),
-('user2', 'password123'),
-('user3', 'password123');
+INSERT INTO users (email, password) VALUES 
+('user1@gmail.com', 'password123'),
+('user2@gmail.com', 'password123'),
+('user3@gmail.com', 'password123');
 
 INSERT INTO movies (title, duration, description) VALUES 
 ('Avatar: The Way of Water', 192, 'Epic science fiction film'),
@@ -59,9 +59,9 @@ INSERT INTO shows (movie_id, show_time) VALUES
 INSERT INTO seats (show_id, seat_name, status)
 SELECT s.show_id, 
        row_letter || seat_number,
-       'AVAILABLE'
+       'available'
 FROM shows s
 CROSS JOIN (SELECT 'A' AS row_letter UNION SELECT 'B') rows
-CROSS JOIN generate_series(1, 10) AS seat_numb
+CROSS JOIN generate_series(1, 10) AS gs(seat_number);
 
 
