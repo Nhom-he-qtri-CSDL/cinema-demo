@@ -7,13 +7,13 @@ type User struct {
 }
 
 type LoginRequest struct {
-	Email string `json:"email" binding:"required"` // Giữ username để tương thích, nhưng thực tế sẽ là email
+	Email    string `json:"email" binding:"required"` 
 	Password string `json:"password" binding:"required"`
 }
 
 type LoginResponse struct {
-	UserID   int    `json:"user_id"`
-	Email    string `json:"email"`
-	Token    string `json:"token"`
-	Message  string `json:"message"`
+	UserID  int    `json:"user_id"`
+	Email   string `json:"email"`
+	Token   string `json:"token"`
+	Message string `json:"message"`
 }

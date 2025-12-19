@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { authApi } from "../api/authApi";
+import authApi from "../api/authApi";
 import MovieCarousel from "../components/MovieCarousel";
 import "../styles/auth.css";
 
@@ -18,20 +18,24 @@ const Login = () => {
 
     try {
       // Gọi API login thật để lấy JWT token
-      const response = await authApi.login({
-        username: email, // Backend dùng username field
-        password: password
-      });
+      const loginData = {
+        email: email, // Backend đã sửa để dùng email field
+        password: password,
+      };
+      
+      console.log("Sending login request with:", loginData);
+      const response = await authApi.login(loginData);
 
-      if (response.success) {
-        // Lưu thông tin user và token
+      // Backend trả về response trực tiếp, không có wrapper success/data
+      if (response && response.user_id) {
+        // Lưu thông tin user và token từ response
         const userData = {
-          userID: response.data.userID,
-          id: response.data.userID,
-          username: response.data.username,
-          email: email,
-          token: response.data.token,
-          fullName: response.data.username
+          userID: response.user_id,
+          id: response.user_id,
+          email: response.email,
+          token: response.token,
+          fullName: response.email.split("@")[0], // Dùng phần đầu email làm display name
+          username: response.email, // Để tương thích với code cũ
         };
 
         login(userData);

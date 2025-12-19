@@ -16,13 +16,13 @@ axiosClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Fallback với X-User-ID header để tương thích
     const userID = localStorage.getItem("userID");
     if (userID) {
       config.headers["X-User-ID"] = userID;
     }
-    
+
     return config;
   },
   (error) => {

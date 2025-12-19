@@ -2,9 +2,9 @@ import axiosClient from "./axiosClient";
 
 const authApi = {
   login: (credentials) => {
-    // Hỗ trợ đăng nhập bằng email hoặc username
+    // Đăng nhập bằng email
     return axiosClient.post("/login", {
-      username: credentials.email || credentials.username,
+      email: credentials.email,
       password: credentials.password,
     });
   },
@@ -12,7 +12,7 @@ const authApi = {
   logout: () => {
     // Xóa tất cả thông tin đăng nhập
     localStorage.removeItem("userID");
-    localStorage.removeItem("username");
+    localStorage.removeItem("email");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
   },
@@ -32,12 +32,12 @@ const authApi = {
 
       // Fallback về cách cũ
       const userID = localStorage.getItem("userID");
-      const username = localStorage.getItem("username");
-      if (userID && username) {
+      const email = localStorage.getItem("email");
+      if (userID && email) {
         return {
           user_id: parseInt(userID),
           userID: parseInt(userID),
-          username,
+          email: email,
         };
       }
     } catch (error) {
