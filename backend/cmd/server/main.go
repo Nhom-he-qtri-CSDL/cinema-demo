@@ -24,10 +24,11 @@ func main() {
 	userStore := store.NewUserStore(database)
 	movieStore := store.NewMovieStore(database)
 	seatStore := store.NewSeatStore(database)
+	showStore := store.NewShowStore(database)
 
 	// Initialize services (business logic layer)
 	authService := service.NewAuthService(userStore)
-	bookingService := service.NewBookingService(database, movieStore, seatStore)
+	bookingService := service.NewBookingService(database, movieStore, seatStore, showStore)
 
 	// Initialize controllers (HTTP handlers)
 	authController := controller.NewAuthController(authService)
@@ -53,9 +54,11 @@ func main() {
 	protected := router.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{
-		// CRITICAL ENDPOINT: This is where concurrency control is tested
-		// Multiple users can simultaneously try to book the same seat
-		protected.POST("/book", bookingController.BookSeat)
+		// UNIFIED BOOKING ENDPOINT: Handles both single and multi-seat booking
+		// CRITICAL ENDPOINT: Multiple users booking overlapping seats
+		// Demonstrates PostgreSQL concurrency control and "ALL OR NOTHING" atomicity
+		protected.POST("/book", bookingController.BookSeats)
+		
 		protected.GET("/my-bookings", bookingController.GetMyBookings)
 	}
 
