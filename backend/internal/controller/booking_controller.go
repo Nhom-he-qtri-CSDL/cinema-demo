@@ -3,6 +3,7 @@ package controller
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"cinema.com/demo/internal/model"
 	"cinema.com/demo/internal/service"
@@ -19,10 +20,10 @@ func NewBookingController(bookingService service.BookingService) *BookingControl
 	}
 }
 
-// BookSeat handles seat booking requests
+// BookSeats handles both single and multi-seat booking requests
 // POST /book
-// This is where concurrent users will compete for the same seat!
-func (bc *BookingController) BookSeat(c *gin.Context) {
+// UNIFIED ENDPOINT: This is where concurrent users will compete for seats!
+func (bc *BookingController) BookSeats(c *gin.Context) {
 	// Get user ID from middleware
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -32,32 +33,50 @@ func (bc *BookingController) BookSeat(c *gin.Context) {
 	
 	var req model.BookingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format", 
+			"details": err.Error(),
+		})
 		return
 	}
 	
-	log.Printf("Booking attempt: User %d trying to book seat %d", userID.(int), req.SeatID)
+	// Log booking attempt (works for both single and multi-seat)
+	if req.SeatID != nil {
+		log.Printf("Single seat booking attempt: User %d trying to book seat %d", 
+			userID.(int), *req.SeatID)
+	} else {
+		log.Printf("Multi-seat booking attempt: User %d trying to book seats %v for show %d", 
+			userID.(int), req.SeatNames, req.ShowID)
+	}
 	
-	// This is where the concurrency control magic happens!
-	// Multiple requests may arrive simultaneously for the same seat
-	response, err := bc.bookingService.BookSeat(userID.(int), req.SeatID)
+	// CORE CONCURRENCY CONTROL: Unified method handles both booking types
+	// Multiple concurrent requests for overlapping seats will be handled safely by PostgreSQL
+	response, err := bc.bookingService.BookSeats(userID.(int), &req)
 	if err != nil {
-		log.Printf("Booking failed for user %d, seat %d: %v", userID.(int), req.SeatID, err)
+		log.Printf("Booking failed for user %d: %v", userID.(int), err)
 		
-		// Check if it's a concurrency conflict
-		if err.Error() == "seat is no longer available - already booked by another user" {
+		// Check for concurrency conflicts (works for both single and multi-seat)
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "seat is no longer available") || 
+		   strings.Contains(errMsg, "seats no longer available") ||
+		   strings.Contains(errMsg, "concurrent booking detected") {
 			c.JSON(http.StatusConflict, gin.H{
-				"error": "Seat is no longer available",
-				"message": "Another user has already booked this seat. Please select a different seat.",
+				"error": "Seats no longer available",
+				"message": "One or more seats have been booked by other users. Please select different seats.",
+				"details": errMsg,
 			})
 			return
 		}
 		
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// Other errors (validation, database issues, etc.)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Booking failed", 
+			"details": errMsg,
+		})
 		return
 	}
 	
-	log.Printf("Booking successful for user %d, seat %d", userID.(int), req.SeatID)
+	log.Printf("Booking successful for user %d", userID.(int))
 	c.JSON(http.StatusOK, response)
 }
 
@@ -78,3 +97,4 @@ func (bc *BookingController) GetMyBookings(c *gin.Context) {
 	
 	c.JSON(http.StatusOK, gin.H{"bookings": bookings})
 }
+

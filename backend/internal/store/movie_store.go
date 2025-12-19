@@ -10,6 +10,7 @@ import (
 type MovieStore interface {
 	GetAll() ([]model.Movie, error)
 	GetByID(movieID int) (*model.Movie, error)
+	GetByShowID(showID int) (*model.Movie, error)
 	GetShows(movieID int) ([]model.ShowWithMovie, error)
 	GetAllShows() ([]model.ShowWithMovie, error)
 }
@@ -131,4 +132,28 @@ func (s *movieStore) GetAllShows() ([]model.ShowWithMovie, error) {
 	}
 	
 	return shows, nil
+}
+
+// GetByShowID retrieves movie information by show ID
+func (s *movieStore) GetByShowID(showID int) (*model.Movie, error) {
+    query := `
+        SELECT m.movie_id, m.tittle, m.duration, m.description
+        FROM movies m
+        INNER JOIN shows s ON m.movie_id = s.movie_id
+        WHERE s.show_id = $1
+    `
+    
+    var movie model.Movie
+    err := s.db.QueryRow(query, showID).Scan(
+        &movie.MovieID,
+        &movie.Title,
+        &movie.Duration,
+        &movie.Description,
+    )
+    
+    if err != nil {
+        return nil, fmt.Errorf("movie not found for show %d: %w", showID, err)
+    }
+    
+    return &movie, nil
 }
