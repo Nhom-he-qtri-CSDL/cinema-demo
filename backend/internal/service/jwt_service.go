@@ -14,7 +14,7 @@ const jwtSecret = "cinema-booking-secret-key-2024"
 // JWT Claims structure
 type Claims struct {
 	UserID   int    `json:"user_id"`
-	Username string `json:"username"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -37,7 +37,7 @@ func (j *jwtService) GenerateToken(user *model.User) (string, error) {
 	
 	claims := &Claims{
 		UserID:   user.UserID,
-		Username: user.Username,
+		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

@@ -1,35 +1,50 @@
 import axiosClient from "./axiosClient";
 
 const authApi = {
-  login: (username, password) => {
+  login: (credentials) => {
+    // Hỗ trợ đăng nhập bằng email hoặc username
     return axiosClient.post("/login", {
-      username,
-      password,
+      username: credentials.email || credentials.username,
+      password: credentials.password,
     });
   },
 
   logout: () => {
-    // Xóa userID
+    // Xóa tất cả thông tin đăng nhập
     localStorage.removeItem("userID");
-    // Xóa username (nếu lưu)
     localStorage.removeItem("username");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem("userID");
+    // Kiểm tra có token hoặc userID
+    return !!(localStorage.getItem("token") || localStorage.getItem("userID"));
   },
 
   getStoredUser: () => {
-    const userID = localStorage.getItem("userID");
-    const username = localStorage.getItem("username");
-    if (userID && username) {
-      return {
-        user_id: parseInt(userID),
-        username,
-      };
+    try {
+      // Ưu tiên lấy từ user object đã lưu
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+
+      // Fallback về cách cũ
+      const userID = localStorage.getItem("userID");
+      const username = localStorage.getItem("username");
+      if (userID && username) {
+        return {
+          user_id: parseInt(userID),
+          userID: parseInt(userID),
+          username,
+        };
+      }
+    } catch (error) {
+      console.error("Error parsing stored user:", error);
     }
 
-    // Nếu thiếu 1 trong 2 thì return null (user chưa login)
+    // Nếu thiếu thông tin thì return null (user chưa login)
     return null;
   },
 };

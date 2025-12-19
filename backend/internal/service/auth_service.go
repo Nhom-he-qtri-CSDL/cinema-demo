@@ -8,7 +8,7 @@ import (
 )
 
 type AuthService interface {
-	Login(username, password string) (*model.LoginResponse, error)
+	Login(email, password string) (*model.LoginResponse, error)
 	GetUserByID(userID int) (*model.User, error)
 	ValidateToken(tokenString string) (*model.User, error)
 }
@@ -25,8 +25,8 @@ func NewAuthService(userStore store.UserStore) AuthService {
 	}
 }
 
-func (s *authService) Login(username, password string) (*model.LoginResponse, error) {
-	user, err := s.userStore.GetByUsername(username)
+func (s *authService) Login(email, password string) (*model.LoginResponse, error) {
+	user, err := s.userStore.GetByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("invalid credentials")
 	}
@@ -44,7 +44,7 @@ func (s *authService) Login(username, password string) (*model.LoginResponse, er
 	
 	return &model.LoginResponse{
 		UserID:   user.UserID,
-		Username: user.Username,
+		Email: user.Email,
 		Token:    token,
 		Message:  "Login successful",
 	}, nil

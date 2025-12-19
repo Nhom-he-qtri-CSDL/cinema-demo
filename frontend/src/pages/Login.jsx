@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { authApi } from "../api/authApi";
 import MovieCarousel from "../components/MovieCarousel";
 import "../styles/auth.css";
 
@@ -16,17 +17,31 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      const userData = {
-        id: 1,
-        email,
-        fullName: email.split("@")[0],
-      };
+      // Gọi API login thật để lấy JWT token
+      const response = await authApi.login({
+        username: email, // Backend dùng username field
+        password: password
+      });
 
-      login(userData);
-      navigate("/");
+      if (response.success) {
+        // Lưu thông tin user và token
+        const userData = {
+          userID: response.data.userID,
+          id: response.data.userID,
+          username: response.data.username,
+          email: email,
+          token: response.data.token,
+          fullName: response.data.username
+        };
+
+        login(userData);
+        navigate("/");
+      } else {
+        alert(response.message || "Đăng nhập thất bại");
+      }
     } catch (error) {
       console.error("Login error:", error);
+      alert("Lỗi đăng nhập: " + (error.response?.data?.error || error.message));
     } finally {
       setIsLoading(false);
     }

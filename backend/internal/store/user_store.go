@@ -8,7 +8,7 @@ import (
 )
 
 type UserStore interface {
-	GetByUsername(username string) (*model.User, error)
+	GetByEmail(email string) (*model.User, error) // username sẽ thực tế là email
 	GetByID(userID int) (*model.User, error)
 }
 
@@ -20,13 +20,14 @@ func NewUserStore(db *sql.DB) UserStore {
 	return &userStore{db: db}
 }
 
-func (s *userStore) GetByUsername(username string) (*model.User, error) {
-	query := `SELECT user_id, username, password FROM users WHERE username = $1`
+func (s *userStore) GetByEmail(email string) (*model.User, error) {
+	// Tìm user bằng email (username thực tế là email được gửi từ frontend)
+	query := `SELECT user_id, email, password FROM users WHERE email = $1`
 	
 	var user model.User
-	err := s.db.QueryRow(query, username).Scan(
+	err := s.db.QueryRow(query, email).Scan(
 		&user.UserID,
-		&user.Username,
+		&user.Email,
 		&user.Password,
 	)
 	
@@ -41,12 +42,12 @@ func (s *userStore) GetByUsername(username string) (*model.User, error) {
 }
 
 func (s *userStore) GetByID(userID int) (*model.User, error) {
-	query := `SELECT user_id, username, password FROM users WHERE user_id = $1`
+	query := `SELECT user_id, email, password FROM users WHERE user_id = $1`
 	
 	var user model.User
 	err := s.db.QueryRow(query, userID).Scan(
 		&user.UserID,
-		&user.Username,
+		&user.Email,
 		&user.Password,
 	)
 	

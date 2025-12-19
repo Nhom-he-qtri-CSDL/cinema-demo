@@ -27,7 +27,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 	
-	response, err := ac.authService.Login(req.Username, req.Password)
+	response, err := ac.authService.Login(req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
