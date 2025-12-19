@@ -37,7 +37,7 @@ const Header = () => {
         <div className="header-actions">
           {user ? (
             <div className="user-menu">
-              <span className="user-info">👤 {user.fullName}</span>
+              <span className="user-info">{user.fullName}</span>
               <button onClick={handleLogout} className="btn-logout">
                 Logout
               </button>

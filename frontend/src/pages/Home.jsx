@@ -104,15 +104,6 @@ const Home = () => {
         <div className="hero-glow"></div>
       </section>
 
-      {/* Welcome Message */}
-      {user && (
-        <div className="welcome-banner">
-          <span>
-            Welcome back, <strong>{user.fullName}</strong>!
-          </span>
-        </div>
-      )}
-
       {/* Featured Section */}
       <section className="featured-section">
         <div className="section-header">
@@ -155,66 +146,6 @@ const Home = () => {
           ))}
         </div>
       </section>
-
-      {/* CTA Section */}
-      {/* <section className="cta-section">
-        <div className="cta-content">
-          <h2>🎄 Chrismast Voucher is waiting for you 🎄</h2>
-          <p className="promo-subtitle">Lots of gifts here!!!!!</p>
-
-          <div className="promo-grid">
-            <div className="promo-card">
-              <div className="promo-icon">🎬</div>
-              <h3>Mua 3 Tặng 1</h3>
-              <p>Mua 3 vé, tặng 1 vé miễn phí cho phim bất kỳ</p>
-            </div>
-
-            <div className="promo-card">
-              <div className="promo-icon">🍿</div>
-              <h3>Bắp & Nước Giảm 30%</h3>
-              <p>Tất cả đồ ăn nhẹ và đồ uống giảm 30% ngay hôm nay</p>
-            </div>
-
-            <div className="promo-card">
-              <div className="promo-icon">🎁</div>
-              <h3>Quà Tặng Bí Ẩn</h3>
-              <p>Mỗi khách hàng mới được nhận quà ngẫu nhiên</p>
-            </div>
-
-            <div className="promo-card">
-              <div className="promo-icon">⭐</div>
-              <h3>Điểm Thưởng Gấp Đôi</h3>
-              <p>Tích điểm gấp 2 lần cho mỗi vé đặt mua</p>
-            </div>
-          </div>
-
-          {!user ? (
-            <>
-              <p className="cta-call-to-action">
-                Đăng nhập ngay để nhận ưu đãi!
-              </p>
-              <button
-                className="btn btn-primary btn-large"
-                onClick={() => navigate("/login")}
-              >
-                Đăng Nhập Ngay
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="cta-call-to-action">
-                Chọn phim yêu thích của bạn ngay!
-              </p>
-              <button
-                className="btn btn-primary btn-large"
-                onClick={() => navigate("/movies")}
-              >
-                Xem Tất Cả Phim
-              </button>
-            </>
-          )}
-        </div>
-      </section> */}
     </div>
   );
 };
