@@ -52,7 +52,7 @@ func main() {
 
 	// Protected routes (authentication required)
 	protected := router.Group("/api")
-	protected.Use(middleware.AuthMiddleware())
+	protected.Use(middleware.JWTAuthMiddleware(authService))
 	{
 		// UNIFIED BOOKING ENDPOINT: Handles both single and multi-seat booking
 		// CRITICAL ENDPOINT: Multiple users booking overlapping seats

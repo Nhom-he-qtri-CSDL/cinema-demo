@@ -10,15 +10,18 @@ import (
 type AuthService interface {
 	Login(username, password string) (*model.LoginResponse, error)
 	GetUserByID(userID int) (*model.User, error)
+	ValidateToken(tokenString string) (*model.User, error)
 }
 
 type authService struct {
-	userStore store.UserStore
+	userStore  store.UserStore
+	jwtService JWTService
 }
 
 func NewAuthService(userStore store.UserStore) AuthService {
 	return &authService{
-		userStore: userStore,
+		userStore:  userStore,
+		jwtService: NewJWTService(),
 	}
 }
 
@@ -33,13 +36,35 @@ func (s *authService) Login(username, password string) (*model.LoginResponse, er
 		return nil, fmt.Errorf("invalid credentials")
 	}
 	
+	// Generate JWT token
+	token, err := s.jwtService.GenerateToken(user)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate token: %w", err)
+	}
+	
 	return &model.LoginResponse{
 		UserID:   user.UserID,
 		Username: user.Username,
+		Token:    token,
 		Message:  "Login successful",
 	}, nil
 }
 
 func (s *authService) GetUserByID(userID int) (*model.User, error) {
 	return s.userStore.GetByID(userID)
+}
+
+func (s *authService) ValidateToken(tokenString string) (*model.User, error) {
+	claims, err := s.jwtService.ValidateToken(tokenString)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %w", err)
+	}
+	
+	// Get user from database to ensure user still exists
+	user, err := s.userStore.GetByID(claims.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+	
+	return user, nil
 }
