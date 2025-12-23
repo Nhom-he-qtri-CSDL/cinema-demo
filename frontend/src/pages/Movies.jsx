@@ -1,6 +1,8 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import movieApi from "../api/movieApi";
+import showApi from "../api/showApi";
 import "../styles/movies.css";
 
 const Movies = () => {
@@ -9,10 +11,58 @@ const Movies = () => {
   const [searchParams] = useSearchParams();
   const [selectedGenre, setSelectedGenre] = useState("Tất Cả");
   const movieIdFromHome = searchParams.get("id");
+  const [allMovies, setAllMovies] = useState([]);
+  const [moviesWithShows, setMoviesWithShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch movies from backend
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        setLoading(true);
+        const response = await movieApi.getMovies();
+        const movies = response.movies || [];
+        setAllMovies(movies);
+
+        // Fetch shows for each movie
+        const moviesWithShowsData = await Promise.all(
+          movies.map(async (movie) => {
+            try {
+              const showsResponse = await showApi.getShows(movie.movie_id);
+              return {
+                ...movie,
+                showtimes: showsResponse.shows || [],
+              };
+            } catch (error) {
+              console.error(
+                `Error fetching shows for movie ${movie.movie_id}:`,
+                error
+              );
+              return {
+                ...movie,
+                showtimes: [],
+              };
+            }
+          })
+        );
+
+        setMoviesWithShows(moviesWithShowsData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching movies:", err);
+        setError("Không thể tải danh sách phim. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, []);
 
   // Scroll to specific movie
   useEffect(() => {
-    if (movieIdFromHome) {
+    if (movieIdFromHome && moviesWithShows.length > 0) {
       setTimeout(() => {
         const movieElement = document.getElementById(
           `movie-${movieIdFromHome}`
@@ -26,141 +76,70 @@ const Movies = () => {
         }
       }, 100);
     }
-  }, [movieIdFromHome]);
+  }, [movieIdFromHome, moviesWithShows]);
 
-  // Demo movies data with showtimes
-  const allMovies = [
-    {
-      id: 1,
-      title: "Avatar: Lửa Và Tro Tàn",
-      image: "../../public/assets/images/film/avatar.jpg",
-      rating: 8.5,
-      genre: "Giả tưởng, Hành động",
-      duration: "197 min",
-      releaseDate: "2024-12-15",
-      director: "James Cameron",
-      cast: "Sam Worthington, Zoe Saldana",
-      description:
-        "Tiếp tục cuộc phiêu lưu trên hành tinh Pandora, Jake Sully và nhóm của anh ta phải đối mặt với những thách thức mới.",
-      showtimes: [
-        { id: 1, time: "10:00 AM", type: "2D" },
-        { id: 2, time: "01:30 PM", type: "3D" },
-        { id: 3, time: "05:00 PM", type: "2D" },
-        { id: 4, time: "08:30 PM", type: "3D" },
-      ],
-    },
-    {
-      id: 2,
-      title: "Phi Vụ Động Trời 2",
-      image: "../../public/assets/images/film/zootopia.jpg",
-      rating: 7.8,
-      genre: "Hành động, Phiêu lưu",
-      duration: "145 min",
-      releaseDate: "2024-11-20",
-      director: "Christopher McQuarrie",
-      cast: "Tom Cruise, Miles Teller",
-      description:
-        "Ethan Hunt và đội ngũ của anh tiếp tục cuộc chiến chống lại những kẻ thù nguy hiểm.",
-      showtimes: [
-        { id: 1, time: "09:30 AM", type: "2D" },
-        { id: 2, time: "12:45 PM", type: "2D" },
-        { id: 3, time: "04:15 PM", type: "3D" },
-        { id: 4, time: "07:45 PM", type: "2D" },
-        { id: 5, time: "10:15 PM", type: "3D" },
-      ],
-    },
-    {
-      id: 3,
-      title: "Thế Hệ Kỳ Tích",
-      image: "../../public/assets/images/film/the-he-ki-tich.jpg",
-      rating: 8.2,
-      genre: "Tâm lý, Chính kịch",
-      duration: "138 min",
-      releaseDate: "2024-10-10",
-      director: "Various",
-      cast: "Vietnamese Actors",
-      description:
-        "Câu chuyện cảm động về một thế hệ trẻ và những giấc mơ của họ.",
-      showtimes: [
-        { id: 1, time: "11:00 AM", type: "2D" },
-        { id: 2, time: "02:30 PM", type: "2D" },
-        { id: 3, time: "06:00 PM", type: "2D" },
-      ],
-    },
-    {
-      id: 4,
-      title: "Chân Trời Rực Rỡ",
-      image: "../../public/assets/images/film/ctrr.jpg",
-      rating: 8.0,
-      genre: "Tài liệu",
-      duration: "85 min",
-      releaseDate: "2024-12-01",
-      director: "Documentary Team",
-      cast: "Various",
-      description:
-        "Một cuộc hành trình tài liệu khám phá những kỳ tích của thiên nhiên.",
-      showtimes: [
-        { id: 1, time: "10:30 AM", type: "2D" },
-        { id: 2, time: "03:00 PM", type: "2D" },
-      ],
-    },
-    {
-      id: 5,
-      title: "Anh Trai Tôi Là Khủng Long",
-      image: "../../public/assets/images/film/anh-trai-toi-la-khung-long.jpg",
-      rating: 7.9,
-      genre: "Giả tưởng, Hành động",
-      duration: "120 min",
-      releaseDate: "2024-11-15",
-      director: "Vietnamese Director",
-      cast: "Vietnamese Actors",
-      description:
-        "Một bộ phim giả tưởng hài hước về anh trai là một chú khủng long.",
-      showtimes: [
-        { id: 1, time: "10:00 AM", type: "2D" },
-        { id: 2, time: "01:00 PM", type: "2D" },
-        { id: 3, time: "04:30 PM", type: "2D" },
-        { id: 4, time: "07:30 PM", type: "2D" },
-      ],
-    },
-    {
-      id: 6,
-      title: "Kumanthong Nhật Bản: Vong Nhi Cúp Bế",
-      image: "../../public/assets/images/film/kumathong-japan.jpg",
-      rating: 7.5,
-      genre: "Kinh dị, Tâm linh",
-      duration: "156 min",
-      releaseDate: "2024-12-05",
-      director: "Horror Master",
-      cast: "Asian Actors",
-      description:
-        "Một bộ phim kinh dị với những yếu tố tâm linh từ các nền văn hóa Á Đông.",
-      showtimes: [
-        { id: 1, time: "06:00 PM", type: "2D" },
-        { id: 2, time: "09:00 PM", type: "2D" },
-      ],
-    },
-  ];
-
-  // Get unique genres
+  // Get unique genres from backend data
   const genres = [
     "Tất Cả",
-    ...new Set(allMovies.flatMap((m) => m.genre.split(", "))),
+    ...new Set(
+      moviesWithShows
+        .map((m) => m.genre)
+        .filter(Boolean)
+        .flatMap((g) => g.split(",").map((genre) => genre.trim()))
+    ),
   ];
 
   // Filter movies
   const filteredMovies =
     selectedGenre === "Tất Cả"
-      ? allMovies
-      : allMovies.filter((movie) => movie.genre.includes(selectedGenre));
+      ? moviesWithShows
+      : moviesWithShows.filter((movie) => movie.genre?.includes(selectedGenre));
 
   const handleShowtimeClick = (movie, showtime) => {
     if (!user) {
       navigate("/login");
     } else {
-      navigate(`/shows/${movie.id}`);
+      navigate(`/shows/${movie.movie_id}`);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="movies-page">
+        <div
+          className="loading-container"
+          style={{ textAlign: "center", padding: "50px" }}
+        >
+          <p style={{ fontSize: "18px", color: "#00d4ff" }}>
+            Đang tải danh sách phim...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="movies-page">
+        <div
+          className="error-container"
+          style={{ textAlign: "center", padding: "50px" }}
+        >
+          <p style={{ fontSize: "18px", color: "#ff4444" }}>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              cursor: "pointer",
+            }}
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="movies-page">
@@ -187,71 +166,131 @@ const Movies = () => {
       {/* Movies List */}
       <div className="movies-container">
         <div className="movies-list">
-          {filteredMovies.map((movie) => (
-            <div key={movie.id} id={`movie-${movie.id}`} className="movie-item">
-              {/* Left Side - Poster */}
-              <div className="movie-poster-section">
-                <img
-                  src={movie.image}
-                  alt={movie.title}
-                  className="movie-poster-image"
-                />
-              </div>
-
-              {/* Right Side - Info & Showtimes */}
-              <div className="movie-details-section">
-                <div className="movie-header">
-                  <h2>{movie.title}</h2>
-                  <div className="movie-quick-info">
-                    <span className="rating">⭐ {movie.rating}/10</span>
-                    <span className="duration">⏱️ {movie.duration}</span>
-                  </div>
-                </div>
-
-                <div className="movie-metadata">
-                  <p>
-                    <strong>Thể Loại:</strong> {movie.genre}
-                  </p>
-                  <p>
-                    <strong>Đạo Diễn:</strong> {movie.director}
-                  </p>
-                  <p>
-                    <strong>Diễn Viên:</strong> {movie.cast}
-                  </p>
-                  <p>
-                    <strong>Ngày Phát Hành:</strong> {movie.releaseDate}
-                  </p>
-                </div>
-
-                <div className="movie-description">
-                  <p>{movie.description}</p>
-                </div>
-
-                {/* Showtimes */}
-                <div className="showtimes-section">
-                  <h4>Khung Giờ Chiếu Hôm Nay:</h4>
-                  <div className="showtimes-grid">
-                    {movie.showtimes.map((showtime) => (
-                      <button
-                        key={showtime.id}
-                        className="showtime-btn"
-                        onClick={() => handleShowtimeClick(movie, showtime)}
-                      >
-                        <span className="time">{showtime.time}</span>
-                        <span className="type">{showtime.type}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {!user && (
-                  <p className="login-warning">
-                    ⚠️ Vui lòng <strong>đăng nhập</strong> để đặt vé
-                  </p>
-                )}
-              </div>
+          {filteredMovies.length === 0 ? (
+            <div
+              style={{ textAlign: "center", padding: "50px", color: "#999" }}
+            >
+              <p>Không tìm thấy phim nào.</p>
             </div>
-          ))}
+          ) : (
+            filteredMovies.map((movie) => (
+              <div
+                key={movie.movie_id}
+                id={`movie-${movie.movie_id}`}
+                className="movie-item"
+              >
+                {/* Left Side - Poster */}
+                <div className="movie-poster-section">
+                  <img
+                    src={
+                      movie.poster_url ||
+                      "../../public/assets/images/film/avatar.jpg"
+                    }
+                    alt={movie.title}
+                    className="movie-poster-image"
+                    onError={(e) => {
+                      e.target.src =
+                        "../../public/assets/images/film/avatar.jpg";
+                    }}
+                  />
+                </div>
+
+                {/* Right Side - Info & Showtimes */}
+                <div className="movie-details-section">
+                  <div className="movie-header">
+                    <h2>{movie.title}</h2>
+                    <div className="movie-quick-info">
+                      {movie.rating && (
+                        <span className="rating">⭐ {movie.rating}/10</span>
+                      )}
+                      {movie.duration && (
+                        <span className="duration">
+                          ⏱️ {movie.duration} phút
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="movie-metadata">
+                    {movie.genre && (
+                      <p>
+                        <strong>Thể Loại:</strong> {movie.genre}
+                      </p>
+                    )}
+                    {movie.director && (
+                      <p>
+                        <strong>Đạo Diễn:</strong> {movie.director}
+                      </p>
+                    )}
+                    {movie.cast && (
+                      <p>
+                        <strong>Diễn Viên:</strong> {movie.cast}
+                      </p>
+                    )}
+                    {movie.release_date && (
+                      <p>
+                        <strong>Ngày Phát Hành:</strong>{" "}
+                        {new Date(movie.release_date).toLocaleDateString(
+                          "vi-VN"
+                        )}
+                      </p>
+                    )}
+                  </div>
+
+                  {movie.description && (
+                    <div className="movie-description">
+                      <p>{movie.description}</p>
+                    </div>
+                  )}
+
+                  {/* Showtimes */}
+                  <div className="showtimes-section">
+                    <h4>Khung Giờ Chiếu:</h4>
+                    {movie.showtimes && movie.showtimes.length > 0 ? (
+                      <div className="showtimes-grid">
+                        {movie.showtimes.map((showtime) => (
+                          <button
+                            key={showtime.show_id}
+                            className="showtime-btn"
+                            onClick={() => handleShowtimeClick(movie, showtime)}
+                          >
+                            <span className="time">
+                              {new Date(showtime.show_time).toLocaleTimeString(
+                                "vi-VN",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                            <span className="type">
+                              {new Date(showtime.show_time).toLocaleDateString(
+                                "vi-VN",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ color: "#999", fontSize: "14px" }}>
+                        Chưa có suất chiếu
+                      </p>
+                    )}
+                  </div>
+
+                  {!user && (
+                    <p className="login-warning">
+                      ⚠️ Vui lòng <strong>đăng nhập</strong> để đặt vé
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

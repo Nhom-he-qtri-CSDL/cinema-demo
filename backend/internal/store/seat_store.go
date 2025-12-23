@@ -127,14 +127,14 @@ func (s *seatStore) CreateBookingInTx(tx *sql.Tx, userID, seatID int) (int, erro
 func (s *seatStore) GetUserBookings(userID int) ([]model.BookingWithDetails, error) {
 	query := `
 		SELECT 
-			b.booking_id, b.user_id, b.seat_id, b.booked_at,
+			b.booking_id, b.user_id, b.seat_id, b.bookat,
 			s.seat_name, m.title, sh.show_time
 		FROM bookings b
 		JOIN seats s ON b.seat_id = s.seat_id
 		JOIN shows sh ON s.show_id = sh.show_id
 		JOIN movies m ON sh.movie_id = m.movie_id
 		WHERE b.user_id = $1
-		ORDER BY b.booked_at DESC`
+		ORDER BY b.bookat DESC`
 	
 	rows, err := s.db.Query(query, userID)
 	if err != nil {

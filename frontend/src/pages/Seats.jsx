@@ -6,17 +6,57 @@ import { SCREEN_IMAGE, IMAGE_EMPTY } from "../utils/constants";
 import Button from "../components/Button";
 import { AuthContext } from "../context/AuthContext";
 import { BookingContext } from "../context/BookingContext";
+import seatApi from "../api/seatApi";
+import bookingApi from "../api/bookingApi";
 import "../styles/seats.css";
 
 function Seats() {
   const { user } = useContext(AuthContext);
-  const { selectedSeats, currentShow } = useContext(BookingContext);
+  const { selectedSeats, currentShow, clearSeats } = useContext(BookingContext);
   const navigate = useNavigate();
   const { showId } = useParams();
-  const [movieInfo] = useState({
-    id: 1,
-    title: "Avatar: Lửa Và Tro Tàn",
-  });
+  const [movieInfo, setMovieInfo] = useState(null);
+  const [seats, setSeats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [booking, setBooking] = useState(false);
+
+  // Fetch seats from backend
+  useEffect(() => {
+    const fetchSeats = async () => {
+      if (!showId || !currentShow) {
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await seatApi.getSeats(showId);
+        setSeats(response.seats || []);
+
+        // Set movie info from current show
+        if (currentShow.movie_title) {
+          setMovieInfo({
+            id: currentShow.movie_id,
+            title: currentShow.movie_title,
+          });
+        }
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching seats:", err);
+        setError("Không thể tải danh sách ghế. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSeats();
+  }, [showId, currentShow]);
+
+  // Clear seats when unmounting
+  useEffect(() => {
+    return () => clearSeats();
+  }, [clearSeats]);
 
   useEffect(() => {
     // If no show selected, redirect back
@@ -26,32 +66,93 @@ function Seats() {
     }
   }, [currentShow, navigate]);
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (selectedSeats.length === 0) {
       alert("Vui lòng chọn ít nhất một ghế!");
       return;
     }
 
-    if (!currentShow) {
+    if (!currentShow || !showId) {
       alert("Thông tin suất chiếu không hợp lệ!");
       return;
     }
 
-    // Create complete booking data
-    const bookingInfo = {
-      movie: movieInfo,
-      show: currentShow,
-      seats: selectedSeats,
-      totalPrice: selectedSeats.length * 100000, // 100,000 VND per seat
-      user: user,
-      bookingDate: new Date().toLocaleDateString("vi-VN"),
-    };
+    try {
+      setBooking(true);
 
-    // Navigate with booking info
-    navigate("/booking-result", {
-      state: { success: true, booking: bookingInfo },
-    });
+      // Call booking API with show_id and seat names
+      const response = await bookingApi.bookMultipleSeats(
+        parseInt(showId),
+        selectedSeats
+      );
+
+      // Create complete booking data
+      const bookingInfo = {
+        movie: movieInfo,
+        show: currentShow,
+        seats: selectedSeats,
+        totalPrice: selectedSeats.length * 100000, // 100,000 VND per seat
+        user: user,
+        bookingDate: new Date().toLocaleDateString("vi-VN"),
+        bookingResponse: response,
+      };
+
+      // Clear selected seats
+      clearSeats();
+
+      // Navigate with booking info
+      navigate("/booking-result", {
+        state: { success: true, booking: bookingInfo },
+      });
+    } catch (err) {
+      console.error("Booking failed:", err);
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Đặt vé thất bại";
+      alert(`Đặt vé thất bại: ${errorMsg}`);
+    } finally {
+      setBooking(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="seats-page">
+        <div
+          style={{
+            textAlign: "center",
+            padding: "50px",
+            fontSize: "18px",
+            color: "#00d4ff",
+          }}
+        >
+          Đang tải thông tin ghế ngồi...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="seats-page">
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <p
+            style={{ fontSize: "18px", color: "#ff4444", marginBottom: "20px" }}
+          >
+            {error}
+          </p>
+          <button
+            onClick={() => navigate("/movies")}
+            style={{ padding: "10px 20px", cursor: "pointer" }}
+          >
+            Quay lại danh sách phim
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="seats-page">
@@ -65,7 +166,7 @@ function Seats() {
           className="seats-page__screen"
         />
         {/* SeatGrid component */}
-        <SeatGrid />
+        <SeatGrid seatsData={seats} cols={10} />
       </TransparentCard>
       <div className="seats-page__sidebar">
         <img
@@ -131,9 +232,9 @@ function Seats() {
           onClick={handleBooking}
           variant="success"
           className="seats-page__book-button"
-          disabled={selectedSeats.length === 0}
+          disabled={selectedSeats.length === 0 || booking}
         >
-          Đặt vé
+          {booking ? "Đang đặt vé..." : "Đặt vé"}
         </Button>
       </div>
     </div>

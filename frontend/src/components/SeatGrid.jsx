@@ -4,15 +4,20 @@ import Seat from "./Seat";
 import "../styles/seatgrid.css";
 
 // SeatGrid: tạo lưới ghế và quản lý trạng thái chọn ghế
-function SeatGrid({ rows = 5, cols = 8, onSeatsChange }) {
+function SeatGrid({ rows = 5, cols = 8, onSeatsChange, seatsData = [] }) {
   const { selectedSeats, addSeat, removeSeat } = useContext(BookingContext);
 
   // toggleSeat: bật/tắt trạng thái chọn cho ghế có id
-  const toggleSeat = (id) => {
-    if (selectedSeats.includes(id)) {
-      removeSeat(id);
+  const toggleSeat = (seatName, isBooked) => {
+    if (isBooked) {
+      // Không cho phép chọn ghế đã được đặt
+      return;
+    }
+
+    if (selectedSeats.includes(seatName)) {
+      removeSeat(seatName);
     } else {
-      addSeat(id);
+      addSeat(seatName);
     }
   };
 
@@ -23,19 +28,36 @@ function SeatGrid({ rows = 5, cols = 8, onSeatsChange }) {
     }
   }, [selectedSeats, onSeatsChange]);
 
-  // rowLabels: tạo nhãn hàng A, B, C,... dựa trên số hàng
+  // If seatsData from backend exists, use it
+  if (seatsData && seatsData.length > 0) {
+    return (
+      <div
+        className="seat-grid"
+        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+      >
+        {seatsData.map((seat) => (
+          <Seat
+            key={seat.seat_id}
+            text={seat.seat_name}
+            selected={selectedSeats.includes(seat.seat_name)}
+            booked={seat.is_booked}
+            onClick={() => toggleSeat(seat.seat_name, seat.is_booked)}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Fallback: generate default seat grid
   const rowLabels = Array.from({ length: rows }, (_, i) =>
     String.fromCharCode(65 + i)
   );
 
-  // seats: xây mảng id ghế dạng A1, A2, ..., B1, B2, ...
   const seats = [];
   rowLabels.forEach((r) => {
     for (let c = 1; c <= cols; c++) seats.push(`${r}${c}`);
   });
 
-  // render: grid CSS với số cột bằng props cols,
-  // mỗi phần tử là <Seat /> truyền text, trạng thái selected và onClick
   return (
     <div
       className="seat-grid"
@@ -43,10 +65,10 @@ function SeatGrid({ rows = 5, cols = 8, onSeatsChange }) {
     >
       {seats.map((id) => (
         <Seat
-          key={id} // key cho list rendering
-          text={id} // hiển thị id ghế trên nút
-          selected={selectedSeats.includes(id)} // true nếu ghế có trong array
-          onClick={() => toggleSeat(id)} // chuyển đổi trạng thái khi click
+          key={id}
+          text={id}
+          selected={selectedSeats.includes(id)}
+          onClick={() => toggleSeat(id, false)}
         />
       ))}
     </div>
