@@ -125,7 +125,7 @@ const Home = () => {
         ) : (
           <div className="movies-grid">
             {featuredMovies.map((movie) => (
-              <div key={movie.movie_id} className="movie-card-wrapper">
+              <div key={movie.id} className="movie-card-wrapper">
                 <div className="movie-card-container">
                   <img
                     src={
@@ -141,7 +141,7 @@ const Home = () => {
                   />
                   <div
                     className="movie-overlay"
-                    onClick={() => handleBooking(movie.movie_id)}
+                    onClick={() => handleBooking(movie.id)}
                   >
                     <div className="movie-info">
                       <h3>{movie.title}</h3>
