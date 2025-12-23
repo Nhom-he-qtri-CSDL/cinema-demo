@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Transparent_card from "../components/Transparent_card";
 import Button from "../components/Button";
@@ -11,22 +11,94 @@ import {
 } from "../utils/constants";
 import { AuthContext } from "../context/AuthContext";
 import { BookingContext } from "../context/BookingContext";
+import bookingApi from "../api/bookingApi";
 import "../styles/mytickets.css";
 
 function MyTickets() {
   const { user } = useContext(AuthContext);
   const { tickets } = useContext(BookingContext);
   const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
+      return;
     }
+
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        const response = await bookingApi.getMyBookings();
+        setBookings(response.bookings || []);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
+        setError("Không thể tải danh sách vé. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
   }, [user, navigate]);
 
   const handleBackToHome = () => {
     navigate("/");
   };
+
+  if (loading) {
+    return (
+      <div className="mytickets-page">
+        <div
+          style={{
+            textAlign: "center",
+            padding: "50px",
+            fontSize: "18px",
+            color: "#00d4ff",
+          }}
+        >
+          Đang tải danh sách vé...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mytickets-page">
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <p
+            style={{ fontSize: "18px", color: "#ff4444", marginBottom: "20px" }}
+          >
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ padding: "10px 20px", cursor: "pointer" }}
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Combine context tickets with backend bookings
+  const allTickets = [
+    ...tickets,
+    ...bookings.map((booking) => ({
+      id: booking.booking_id,
+      movieName: booking.movie_title,
+      showTime: new Date(booking.show_time).toLocaleString("vi-VN"),
+      seats: [booking.seat_name],
+      customerName: user?.username || user?.email || "Khách hàng",
+      bookingDate: new Date(booking.booked_at).toLocaleDateString("vi-VN"),
+      totalPrice: 100000, // Backend doesn't return price, using default
+    })),
+  ];
 
   return (
     <>
@@ -37,9 +109,9 @@ function MyTickets() {
             {user?.username || user?.email || "Khách hàng"}
           </p>
         </Transparent_card>
-        {tickets.length > 0 ? (
+        {allTickets.length > 0 ? (
           <div className="my-tickets__grid">
-            {tickets.map((ticket) => (
+            {allTickets.map((ticket) => (
               <Transparent_card
                 key={ticket.id}
                 className="my-tickets__ticket-card"

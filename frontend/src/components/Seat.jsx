@@ -1,7 +1,13 @@
 import "../styles/seat.css";
 
-function Seat({ text, onClick, selected = false }) {
-  const seatClass = selected ? "seat seat--selected" : "seat seat--empty";
+function Seat({ text, onClick, selected = false, booked = false }) {
+  let seatClass = "seat seat--empty";
+
+  if (booked) {
+    seatClass = "seat seat--booked";
+  } else if (selected) {
+    seatClass = "seat seat--selected";
+  }
 
   return (
     <button
@@ -9,6 +15,8 @@ function Seat({ text, onClick, selected = false }) {
       className={seatClass}
       onClick={onClick}
       aria-pressed={selected}
+      disabled={booked}
+      style={{ cursor: booked ? "not-allowed" : "pointer" }}
     >
       <span>{text}</span>
     </button>

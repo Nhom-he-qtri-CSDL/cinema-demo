@@ -1,6 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import movieApi from "../api/movieApi";
 // import MovieCard from "../components/MovieCard";
 import Snow from "../components/Snow";
 import "../styles/home.css";
@@ -8,6 +9,7 @@ import "../styles/home.css";
 const Home = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   // Demo movies data
   const featuredMovies = [
@@ -110,41 +112,66 @@ const Home = () => {
           <h2>Featured Movies</h2>
         </div>
 
-        <div className="movies-grid">
-          {featuredMovies.map((movie) => (
-            <div key={movie.id} className="movie-card-wrapper">
-              <div className="movie-card-container">
-                <img
-                  src={movie.image}
-                  alt={movie.title}
-                  className="movie-poster"
-                />
-                <div
-                  className="movie-overlay"
-                  onClick={() => handleBooking(movie.id)}
-                >
-                  <div className="movie-info">
-                    <h3>{movie.title}</h3>
-                    <div className="movie-meta">
-                      <span className="rating">⭐ {movie.rating}</span>
-                      <span className="genre">{movie.genre}</span>
-                    </div>
-                    <p className="duration">🎬 {movie.duration}</p>
-                  </div>
-                  <button
-                    className="btn-book"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleBooking(movie.id);
+        {loading ? (
+          <div
+            style={{ textAlign: "center", padding: "50px", color: "#00d4ff" }}
+          >
+            Loading movies...
+          </div>
+        ) : featuredMovies.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "50px", color: "#999" }}>
+            No movies available
+          </div>
+        ) : (
+          <div className="movies-grid">
+            {featuredMovies.map((movie) => (
+              <div key={movie.movie_id} className="movie-card-wrapper">
+                <div className="movie-card-container">
+                  <img
+                    src={
+                      movie.poster_url ||
+                      "../../public/assets/images/film/avatar.jpg"
+                    }
+                    alt={movie.title}
+                    className="movie-poster"
+                    onError={(e) => {
+                      e.target.src =
+                        "../../public/assets/images/film/avatar.jpg";
                     }}
+                  />
+                  <div
+                    className="movie-overlay"
+                    onClick={() => handleBooking(movie.movie_id)}
                   >
-                    {user ? "Book Now" : "Sign In to Book"}
-                  </button>
+                    <div className="movie-info">
+                      <h3>{movie.title}</h3>
+                      <div className="movie-meta">
+                        {movie.rating && (
+                          <span className="rating">⭐ {movie.rating}</span>
+                        )}
+                        {movie.genre && (
+                          <span className="genre">{movie.genre}</span>
+                        )}
+                      </div>
+                      {movie.duration && (
+                        <p className="duration">🎬 {movie.duration} min</p>
+                      )}
+                    </div>
+                    <button
+                      className="btn-book"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBooking(movie.movie_id);
+                      }}
+                    >
+                      {user ? "Book Now" : "Sign In to Book"}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

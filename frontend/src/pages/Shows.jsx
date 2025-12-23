@@ -1,7 +1,8 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { BookingContext } from "../context/BookingContext";
+import showApi from "../api/showApi";
 import "../styles/shows.css";
 
 const Shows = () => {
@@ -9,42 +10,30 @@ const Shows = () => {
   const { setCurrentShow } = useContext(BookingContext);
   const navigate = useNavigate();
   const { movieId } = useParams();
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Demo shows data
-  const shows = [
-    {
-      id: 1,
-      date: "2024-12-16",
-      time: "10:00 AM",
-      format: "2D",
-      theater: "Theater 1",
-      availableSeats: 45,
-    },
-    {
-      id: 2,
-      date: "2024-12-16",
-      time: "01:30 PM",
-      format: "3D",
-      theater: "Theater 2",
-      availableSeats: 32,
-    },
-    {
-      id: 3,
-      date: "2024-12-16",
-      time: "05:00 PM",
-      format: "2D",
-      theater: "Theater 3",
-      availableSeats: 28,
-    },
-    {
-      id: 4,
-      date: "2024-12-16",
-      time: "08:30 PM",
-      format: "3D",
-      theater: "Theater 1",
-      availableSeats: 15,
-    },
-  ];
+  // Fetch shows from backend
+  useEffect(() => {
+    const fetchShows = async () => {
+      try {
+        setLoading(true);
+        const response = await showApi.getShows(movieId);
+        setShows(response.shows || []);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching shows:", err);
+        setError("Không thể tải danh sách suất chiếu. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (movieId) {
+      fetchShows();
+    }
+  }, [movieId]);
 
   const handleSelectShow = (show) => {
     if (!user) {
@@ -53,8 +42,54 @@ const Shows = () => {
     }
     // Store complete show information
     setCurrentShow(show);
-    navigate(`/seats/${show.id}`);
+    navigate(`/seats/${show.show_id}`);
   };
+
+  if (loading) {
+    return (
+      <div className="shows-page">
+        <div className="shows-container">
+          <p
+            style={{
+              textAlign: "center",
+              padding: "50px",
+              fontSize: "18px",
+              color: "#00d4ff",
+            }}
+          >
+            Đang tải danh sách suất chiếu...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="shows-page">
+        <div className="shows-container">
+          <p
+            style={{
+              textAlign: "center",
+              padding: "50px",
+              fontSize: "18px",
+              color: "#ff4444",
+            }}
+          >
+            {error}
+          </p>
+          <div style={{ textAlign: "center" }}>
+            <button
+              onClick={() => navigate("/movies")}
+              style={{ padding: "10px 20px", cursor: "pointer" }}
+            >
+              Quay lại danh sách phim
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="shows-page">
@@ -64,33 +99,63 @@ const Shows = () => {
           Choose your preferred show for Movie ID: {movieId}
         </p>
 
-        <div className="shows-grid">
-          {shows.map((show) => (
-            <div key={show.id} className="show-card">
-              <div className="show-header">
-                <span className="show-date">{show.date}</span>
-                <span className="show-format">{show.format}</span>
-              </div>
+        {shows.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "50px", color: "#999" }}>
+            <p>Không có suất chiếu nào cho phim này.</p>
+            <button
+              onClick={() => navigate("/movies")}
+              style={{
+                marginTop: "20px",
+                padding: "10px 20px",
+                cursor: "pointer",
+              }}
+            >
+              Quay lại danh sách phim
+            </button>
+          </div>
+        ) : (
+          <div className="shows-grid">
+            {shows.map((show) => {
+              const showDate = new Date(show.show_time);
+              const availableSeats = show.available_seats || 0;
 
-              <div className="show-details">
-                <h3 className="show-time">{show.time}</h3>
-                <p className="show-theater">Theater: {show.theater}</p>
-                <p className="show-seats">
-                  <span className="seats-available">{show.availableSeats}</span>{" "}
-                  Seats Available
-                </p>
-              </div>
+              return (
+                <div key={show.show_id} className="show-card">
+                  <div className="show-header">
+                    <span className="show-date">
+                      {showDate.toLocaleDateString("vi-VN")}
+                    </span>
+                    <span className="show-format">{show.format || "2D"}</span>
+                  </div>
 
-              <button
-                className="btn-select-show"
-                onClick={() => handleSelectShow(show)}
-                disabled={show.availableSeats === 0}
-              >
-                {show.availableSeats > 0 ? "Select Show" : "Sold Out"}
-              </button>
-            </div>
-          ))}
-        </div>
+                  <div className="show-details">
+                    <h3 className="show-time">
+                      {showDate.toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </h3>
+                    <p className="show-theater">
+                      Theater: {show.theater || "Theater 1"}
+                    </p>
+                    <p className="show-seats">
+                      <span className="seats-available">{availableSeats}</span>{" "}
+                      Seats Available
+                    </p>
+                  </div>
+
+                  <button
+                    className="btn-select-show"
+                    onClick={() => handleSelectShow(show)}
+                    disabled={availableSeats === 0}
+                  >
+                    {availableSeats > 0 ? "Select Show" : "Sold Out"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
