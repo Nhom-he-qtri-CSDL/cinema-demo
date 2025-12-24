@@ -30,6 +30,13 @@ func NewConnection(config Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
+	_, err = db.Exec("SET timezone = 'Asia/Ho_Chi_Minh'")
+	if err != nil {
+		log.Printf("Warning: Could not set timezone: %v", err)
+	} else {
+		log.Println("Database timezone set to Asia/Ho_Chi_Minh")
+	}
+
 	log.Println("Successfully connected to PostgreSQL database")
 	return db, nil
 }

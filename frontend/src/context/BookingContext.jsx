@@ -31,6 +31,17 @@ export const BookingProvider = ({ children }) => {
     setSelectedSeats([]);
   }, []);
 
+  // Reset entire booking state (useful for failed bookings)
+  const resetBookingState = useCallback(() => {
+    setSelectedSeats([]);
+    setBookingData({
+      movie: null,
+      show: null,
+      seats: [],
+      totalPrice: 0,
+    });
+  }, []);
+
   const updateBooking = useCallback((data) => {
     setBookingData((prev) => ({ ...prev, ...data }));
   }, []);
@@ -61,6 +72,7 @@ export const BookingProvider = ({ children }) => {
         addSeat,
         removeSeat,
         clearSeats,
+        resetBookingState,
         currentShow,
         setCurrentShow,
         bookingData,

@@ -20,36 +20,37 @@ function Seats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [booking, setBooking] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // New state for refresh feedback
 
-  // Fetch seats from backend
+  // Fetch seats from backend - Extract to reusable function
+  const fetchSeats = async () => {
+    if (!showId || !currentShow) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await seatApi.getSeats(showId);
+      setSeats(response.seats || []);
+
+      // Set movie info from current show
+      if (currentShow.movie_title) {
+        setMovieInfo({
+          id: currentShow.movie_id,
+          title: currentShow.movie_title,
+        });
+      }
+
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching seats:", err);
+      setError("Không thể tải danh sách ghế. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSeats = async () => {
-      if (!showId || !currentShow) {
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await seatApi.getSeats(showId);
-        setSeats(response.seats || []);
-
-        // Set movie info from current show
-        if (currentShow.movie_title) {
-          setMovieInfo({
-            id: currentShow.movie_id,
-            title: currentShow.movie_title,
-          });
-        }
-
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching seats:", err);
-        setError("Không thể tải danh sách ghế. Vui lòng thử lại sau.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSeats();
   }, [showId, currentShow]);
 
@@ -106,12 +107,45 @@ function Seats() {
       });
     } catch (err) {
       console.error("Booking failed:", err);
+
+      // Reset UI with latest seat data when booking fails
+      console.log("🔄 Booking failed, refreshing seat data...");
+
+      // Set refreshing state for UI feedback
+      setRefreshing(true);
+
+      // Clear selected seats immediately to reset UI
+      clearSeats();
+
+      // Fetch latest seat availability from server
+      try {
+        await fetchSeats();
+        console.log("✅ Seat data refreshed after booking failure");
+      } catch (refreshError) {
+        console.error("❌ Failed to refresh seat data:", refreshError);
+      } finally {
+        setRefreshing(false);
+      }
+
       const errorMsg =
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
         "Đặt vé thất bại";
-      alert(`Đặt vé thất bại: ${errorMsg}`);
+
+      // Show error with helpful message about refresh
+      if (
+        errorMsg.includes("already booked") ||
+        errorMsg.includes("conflict") ||
+        errorMsg.includes("409") ||
+        errorMsg.includes("no longer available")
+      ) {
+        alert(
+          `❌ Đặt vé thất bại: ${errorMsg}\n\n🔄 Trạng thái ghế đã được cập nhật tự động. Vui lòng chọn ghế khác.`
+        );
+      } else {
+        alert(`❌ Đặt vé thất bại: ${errorMsg}`);
+      }
     } finally {
       setBooking(false);
     }
@@ -156,6 +190,25 @@ function Seats() {
 
   return (
     <div className="seats-page">
+      {refreshing && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            backgroundColor: "#ff9800",
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            zIndex: 1000,
+            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            animation: "fadeIn 0.3s ease-in-out",
+          }}
+        >
+          🔄 Đang cập nhật trạng thái ghế...
+        </div>
+      )}
+
       <TransparentCard className="seats-page__theater">
         {/* curved "screen" */}
         <img
@@ -228,11 +281,40 @@ function Seats() {
             {user?.username || user?.email || "Khách hàng"}
           </p>
         </TransparentCard>
+
+        {/* Manual refresh button */}
+        <Button
+          onClick={async () => {
+            setRefreshing(true);
+            clearSeats();
+            try {
+              await fetchSeats();
+              alert("🔄 Trạng thái ghế đã được cập nhật!");
+            } catch (error) {
+              console.error("Manual refresh failed:", error);
+              alert("❌ Không thể cập nhật trạng thái ghế. Vui lòng thử lại.");
+            } finally {
+              setRefreshing(false);
+            }
+          }}
+          variant="secondary"
+          className="seats-page__refresh-button"
+          disabled={refreshing || loading}
+          style={{
+            marginBottom: "10px",
+            fontSize: "14px",
+            backgroundColor: refreshing ? "#666" : "#2563eb",
+            cursor: refreshing || loading ? "not-allowed" : "pointer",
+          }}
+        >
+          {refreshing ? "🔄 Đang cập nhật..." : "🔄 Làm mới ghế"}
+        </Button>
+
         <Button
           onClick={handleBooking}
           variant="success"
           className="seats-page__book-button"
-          disabled={selectedSeats.length === 0 || booking}
+          disabled={selectedSeats.length === 0 || booking || refreshing}
         >
           {booking ? "Đang đặt vé..." : "Đặt vé"}
         </Button>
