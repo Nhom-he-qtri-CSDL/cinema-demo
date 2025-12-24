@@ -165,8 +165,8 @@ function Seats() {
           height={SCREEN_IMAGE.height}
           className="seats-page__screen"
         />
-        {/* SeatGrid component */}
-        <SeatGrid seatsData={seats} cols={10} />
+        {/* SeatGrid component - 4 columns for demo database (A1-A4, B1-B4, C1-C4) */}
+        <SeatGrid seatsData={seats} cols={4} />
       </TransparentCard>
       <div className="seats-page__sidebar">
         <img

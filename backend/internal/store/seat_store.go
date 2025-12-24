@@ -24,6 +24,10 @@ type SeatStore interface {
 	CreateMultipleBookingsInTx(tx *sql.Tx, userID int, seatIDs []int) ([]int, error)
 	
 	GetUserBookings(userID int) ([]model.BookingWithDetails, error)
+	
+	// Booking cancellation
+	GetBookingByID(bookingID int) (*model.Booking, error)
+	DeleteBookingInTx(tx *sql.Tx, bookingID int) error
 }
 
 type seatStore struct {
@@ -257,4 +261,50 @@ func (s *seatStore) CreateMultipleBookingsInTx(tx *sql.Tx, userID int, seatIDs [
 	}
 	
 	return bookingIDs, nil
+}
+
+// GetBookingByID: Get booking details by ID
+func (s *seatStore) GetBookingByID(bookingID int) (*model.Booking, error) {
+	query := `
+		SELECT booking_id, user_id, seat_id, bookat 
+		FROM bookings 
+		WHERE booking_id = $1`
+	
+	var booking model.Booking
+	err := s.db.QueryRow(query, bookingID).Scan(
+		&booking.BookingID,
+		&booking.UserID,
+		&booking.SeatID,
+		&booking.BookedAt,
+	)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("booking not found")
+		}
+		return nil, fmt.Errorf("failed to get booking: %w", err)
+	}
+	
+	return &booking, nil
+}
+
+// DeleteBookingInTx: Delete a booking record within a transaction
+func (s *seatStore) DeleteBookingInTx(tx *sql.Tx, bookingID int) error {
+	query := `DELETE FROM bookings WHERE booking_id = $1`
+	
+	result, err := tx.Exec(query, bookingID)
+	if err != nil {
+		return fmt.Errorf("failed to delete booking: %w", err)
+	}
+	
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	
+	if rowsAffected == 0 {
+		return fmt.Errorf("booking not found or already deleted")
+	}
+	
+	return nil
 }

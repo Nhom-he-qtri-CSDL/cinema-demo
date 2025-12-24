@@ -1,5 +1,5 @@
 /* @refresh reset */
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useCallback } from "react";
 
 export const BookingContext = createContext();
 
@@ -14,25 +14,28 @@ export const BookingProvider = ({ children }) => {
   });
   const [tickets, setTickets] = useState([]);
 
-  const addSeat = (seatId) => {
-    if (!selectedSeats.includes(seatId)) {
-      setSelectedSeats([...selectedSeats, seatId]);
-    }
-  };
+  const addSeat = useCallback((seatId) => {
+    setSelectedSeats((prev) => {
+      if (!prev.includes(seatId)) {
+        return [...prev, seatId];
+      }
+      return prev;
+    });
+  }, []);
 
-  const removeSeat = (seatId) => {
-    setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
-  };
+  const removeSeat = useCallback((seatId) => {
+    setSelectedSeats((prev) => prev.filter((id) => id !== seatId));
+  }, []);
 
-  const clearSeats = () => {
+  const clearSeats = useCallback(() => {
     setSelectedSeats([]);
-  };
+  }, []);
 
-  const updateBooking = (data) => {
-    setBookingData({ ...bookingData, ...data });
-  };
+  const updateBooking = useCallback((data) => {
+    setBookingData((prev) => ({ ...prev, ...data }));
+  }, []);
 
-  const saveTicket = (ticketData) => {
+  const saveTicket = useCallback((ticketData) => {
     const newTicket = {
       id: Date.now(),
       movieName: ticketData.movie?.title || "Phim demo",
@@ -48,8 +51,8 @@ export const BookingProvider = ({ children }) => {
       theater: ticketData.show?.theater || "",
       format: ticketData.show?.format || "",
     };
-    setTickets([newTicket, ...tickets]);
-  };
+    setTickets((prev) => [newTicket, ...prev]);
+  }, []);
 
   return (
     <BookingContext.Provider

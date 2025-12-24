@@ -40,8 +40,24 @@ const Shows = () => {
       navigate("/login");
       return;
     }
-    // Store complete show information
-    setCurrentShow(show);
+
+    // Transform show data for context
+    const showDate = new Date(show.show_time);
+    const showInfo = {
+      show_id: show.show_id,
+      movie_id: show.movie_id,
+      movie_title: show.movie_title || "Unknown Movie",
+      time: showDate.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      date: showDate.toLocaleDateString("vi-VN"),
+      format: "2D",
+      theater: "Theater 1",
+      show_time: show.show_time,
+    };
+
+    setCurrentShow(showInfo);
     navigate(`/seats/${show.show_id}`);
   };
 
@@ -117,7 +133,6 @@ const Shows = () => {
           <div className="shows-grid">
             {shows.map((show) => {
               const showDate = new Date(show.show_time);
-              const availableSeats = show.available_seats || 0;
 
               return (
                 <div key={show.show_id} className="show-card">
@@ -125,7 +140,7 @@ const Shows = () => {
                     <span className="show-date">
                       {showDate.toLocaleDateString("vi-VN")}
                     </span>
-                    <span className="show-format">{show.format || "2D"}</span>
+                    <span className="show-format">2D</span>
                   </div>
 
                   <div className="show-details">
@@ -135,21 +150,19 @@ const Shows = () => {
                         minute: "2-digit",
                       })}
                     </h3>
-                    <p className="show-theater">
-                      Theater: {show.theater || "Theater 1"}
-                    </p>
+                    <p className="show-theater">Theater: Theater 1</p>
                     <p className="show-seats">
-                      <span className="seats-available">{availableSeats}</span>{" "}
-                      Seats Available
+                      <span className="movie-title">
+                        {show.movie_title || "Unknown Movie"}
+                      </span>
                     </p>
                   </div>
 
                   <button
                     className="btn-select-show"
                     onClick={() => handleSelectShow(show)}
-                    disabled={availableSeats === 0}
                   >
-                    {availableSeats > 0 ? "Select Show" : "Sold Out"}
+                    Select Show
                   </button>
                 </div>
               );

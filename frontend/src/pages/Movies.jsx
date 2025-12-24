@@ -182,15 +182,11 @@ const Movies = () => {
                 {/* Left Side - Poster */}
                 <div className="movie-poster-section">
                   <img
-                    src={
-                      movie.poster_url ||
-                      "../../public/assets/images/film/avatar.jpg"
-                    }
+                    src={movie.url_image || "/assets/images/film/avatar.jpg"}
                     alt={movie.title}
                     className="movie-poster-image"
                     onError={(e) => {
-                      e.target.src =
-                        "../../public/assets/images/film/avatar.jpg";
+                      e.target.src = "/assets/images/film/avatar.jpg";
                     }}
                   />
                 </div>

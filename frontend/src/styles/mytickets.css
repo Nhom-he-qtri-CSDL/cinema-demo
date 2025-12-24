@@ -103,6 +103,11 @@
   height: 45px !important;
 }
 
+.my-tickets__cancel-button {
+  margin-top: 13px;
+  width: 100%;
+}
+
 @media (max-width: 1024px) {
   .my-tickets__grid {
     grid-template-columns: repeat(2, 1fr);

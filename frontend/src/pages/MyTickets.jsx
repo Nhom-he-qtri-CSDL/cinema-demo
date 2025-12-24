@@ -21,6 +21,7 @@ function MyTickets() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancelling, setCancelling] = useState(null); // Track which booking is being cancelled
 
   useEffect(() => {
     if (!user) {
@@ -44,6 +45,32 @@ function MyTickets() {
 
     fetchBookings();
   }, [user, navigate]);
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!confirm("Bạn có chắc chắn muốn hủy vé này?")) {
+      return;
+    }
+
+    try {
+      setCancelling(bookingId);
+      await bookingApi.cancelBooking(bookingId);
+
+      // Remove cancelled booking from list
+      setBookings((prev) => prev.filter((b) => b.booking_id !== bookingId));
+
+      alert("Hủy vé thành công!");
+    } catch (err) {
+      console.error("Error cancelling booking:", err);
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.details ||
+        err.message ||
+        "Không thể hủy vé";
+      alert(`Hủy vé thất bại: ${errorMsg}`);
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   const handleBackToHome = () => {
     navigate("/");
@@ -86,19 +113,16 @@ function MyTickets() {
     );
   }
 
-  // Combine context tickets with backend bookings
-  const allTickets = [
-    ...tickets,
-    ...bookings.map((booking) => ({
-      id: booking.booking_id,
-      movieName: booking.movie_title,
-      showTime: new Date(booking.show_time).toLocaleString("vi-VN"),
-      seats: [booking.seat_name],
-      customerName: user?.username || user?.email || "Khách hàng",
-      bookingDate: new Date(booking.booked_at).toLocaleDateString("vi-VN"),
-      totalPrice: 100000, // Backend doesn't return price, using default
-    })),
-  ];
+  // Only show bookings from backend (source of truth)
+  const allTickets = bookings.map((booking) => ({
+    id: booking.booking_id,
+    movieName: booking.movie_title,
+    showTime: new Date(booking.show_time).toLocaleString("vi-VN"),
+    seats: [booking.seat_name],
+    customerName: user?.username || user?.email || "Khách hàng",
+    bookingDate: new Date(booking.booked_at).toLocaleDateString("vi-VN"),
+    totalPrice: 100000, // Backend doesn't return price, using default
+  }));
 
   return (
     <>
@@ -180,6 +204,16 @@ function MyTickets() {
                     </p>
                   )}
                 </div>
+
+                {/* Cancel button */}
+                <Button
+                  variant="danger"
+                  className="my-tickets__cancel-button"
+                  onClick={() => handleCancelBooking(ticket.id)}
+                  disabled={cancelling === ticket.id}
+                >
+                  {cancelling === ticket.id ? "Đang hủy..." : "🗑️ Hủy vé"}
+                </Button>
               </Transparent_card>
             ))}
           </div>

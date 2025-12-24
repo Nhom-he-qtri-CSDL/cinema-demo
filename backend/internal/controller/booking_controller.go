@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -78,6 +79,62 @@ func (bc *BookingController) BookSeats(c *gin.Context) {
 	
 	log.Printf("Booking successful for user %d", userID.(int))
 	c.JSON(http.StatusOK, response)
+}
+
+// CancelBooking handles booking cancellation requests
+// DELETE /cancel/:bookingId
+func (bc *BookingController) CancelBooking(c *gin.Context) {
+	// Get user ID from middleware
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	
+	// Get booking ID from URL parameter
+	bookingID := c.Param("bookingId")
+	if bookingID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "booking_id is required"})
+		return
+	}
+	
+	// Convert to int
+	bookingIDInt := 0
+	if _, err := fmt.Sscanf(bookingID, "%d", &bookingIDInt); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid booking ID"})
+		return
+	}
+	
+	log.Printf("User %d attempting to cancel booking %d", userID.(int), bookingIDInt)
+	
+	// Call service to cancel booking
+	err := bc.bookingService.CancelBooking(userID.(int), bookingIDInt)
+	if err != nil {
+		log.Printf("Failed to cancel booking %d: %v", bookingIDInt, err)
+		
+		// Check for authorization errors
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "unauthorized") || strings.Contains(errMsg, "does not belong") {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Unauthorized to cancel this booking",
+				"details": errMsg,
+			})
+			return
+		}
+		
+		// Other errors
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to cancel booking",
+			"details": errMsg,
+		})
+		return
+	}
+	
+	log.Printf("Successfully cancelled booking %d for user %d", bookingIDInt, userID.(int))
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Booking cancelled successfully",
+		"booking_id": bookingIDInt,
+	})
 }
 
 // GetMyBookings returns all bookings for the current user

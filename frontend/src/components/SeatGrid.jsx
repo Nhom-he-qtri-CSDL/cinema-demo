@@ -35,15 +35,18 @@ function SeatGrid({ rows = 5, cols = 8, onSeatsChange, seatsData = [] }) {
         className="seat-grid"
         style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
       >
-        {seatsData.map((seat) => (
-          <Seat
-            key={seat.seat_id}
-            text={seat.seat_name}
-            selected={selectedSeats.includes(seat.seat_name)}
-            booked={seat.is_booked}
-            onClick={() => toggleSeat(seat.seat_name, seat.is_booked)}
-          />
-        ))}
+        {seatsData.map((seat) => {
+          const isBooked = seat.status === "booked";
+          return (
+            <Seat
+              key={seat.seat_id}
+              text={seat.seat_name}
+              selected={selectedSeats.includes(seat.seat_name)}
+              booked={isBooked}
+              onClick={() => toggleSeat(seat.seat_name, isBooked)}
+            />
+          );
+        })}
       </div>
     );
   }

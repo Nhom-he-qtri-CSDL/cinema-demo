@@ -26,6 +26,13 @@ const bookingApi = {
   getMyBookings: () => {
     return axiosClient.get("/my-bookings");
   },
+
+  cancelBooking: (bookingId) => {
+    if (!bookingId) {
+      return Promise.reject(new Error("bookingId is required"));
+    }
+    return axiosClient.delete(`/cancel/${bookingId}`);
+  },
 };
 
 export default bookingApi;

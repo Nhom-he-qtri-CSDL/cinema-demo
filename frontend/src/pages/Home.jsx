@@ -128,15 +128,11 @@ const Home = () => {
               <div key={movie.id} className="movie-card-wrapper">
                 <div className="movie-card-container">
                   <img
-                    src={
-                      movie.poster_url ||
-                      "../../public/assets/images/film/avatar.jpg"
-                    }
+                    src={movie.image || "/assets/images/film/avatar.jpg"}
                     alt={movie.title}
                     className="movie-poster"
                     onError={(e) => {
-                      e.target.src =
-                        "../../public/assets/images/film/avatar.jpg";
+                      e.target.src = "/assets/images/film/avatar.jpg";
                     }}
                   />
                   <div

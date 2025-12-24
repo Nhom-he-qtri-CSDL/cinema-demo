@@ -19,6 +19,9 @@ type BookingService interface {
 	BookSeats(userID int, req *model.BookingRequest) (*model.BookingResponse, error)
 	
 	GetUserBookings(userID int) ([]model.BookingWithDetails, error)
+	
+	// Cancel booking and free up seat
+	CancelBooking(userID int, bookingID int) error
 }
 
 type bookingService struct {
@@ -288,4 +291,66 @@ func (s *bookingService) getShowAndMovieDetails(showID int) (*model.Show, *model
     }
     
     return show, movie, nil
+}
+
+// CancelBooking: Cancel a booking and mark seat as available again
+// Demonstrates transaction atomicity for cancellation operations
+func (s *bookingService) CancelBooking(userID int, bookingID int) error {
+	// Start transaction for atomic cancellation
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	
+	defer func() {
+		if err != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				log.Printf("Failed to rollback transaction: %v", rollbackErr)
+			}
+		}
+	}()
+	
+	log.Printf("User %d attempting to cancel booking %d", userID, bookingID)
+	
+	// Get booking details with user verification
+	booking, err := s.seatStore.GetBookingByID(bookingID)
+	if err != nil {
+		return fmt.Errorf("booking not found: %w", err)
+	}
+	
+	// Verify booking belongs to this user
+	if booking.UserID != userID {
+		return fmt.Errorf("unauthorized: booking does not belong to this user")
+	}
+	
+	// Delete booking record
+	err = s.seatStore.DeleteBookingInTx(tx, bookingID)
+	if err != nil {
+		return fmt.Errorf("failed to delete booking: %w", err)
+	}
+	
+	// Mark seat as available again
+	success, err := s.seatStore.UpdateSeatStatusInTx(
+		tx, 
+		booking.SeatID, 
+		model.SeatStatusAvailable, 
+		model.SeatStatusBooked,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update seat status: %w", err)
+	}
+	
+	if !success {
+		return fmt.Errorf("failed to free seat - seat may have been modified")
+	}
+	
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+	
+	log.Printf("SUCCESS: User %d cancelled booking %d, seat %d is now available", 
+		userID, bookingID, booking.SeatID)
+	
+	return nil
 }

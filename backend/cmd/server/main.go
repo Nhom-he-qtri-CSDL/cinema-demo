@@ -60,6 +60,9 @@ func main() {
 		protected.POST("/book", bookingController.BookSeats)
 		
 		protected.GET("/my-bookings", bookingController.GetMyBookings)
+		
+		// Cancel booking endpoint
+		protected.DELETE("/cancel/:bookingId", bookingController.CancelBooking)
 	}
 
 	// Health check endpoint

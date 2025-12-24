@@ -4,11 +4,12 @@ const VARIANT_MAP = {
   success: "var(--success-color)",
   secondary: "var(--secondary-color)",
   accent: "var(--accent-color)",
+  danger: "#dc2626",
 };
 
 /**
  * Props:
- * - variant: 'success' | 'secondary' | 'accent' (default: 'success')
+ * - variant: 'success' | 'secondary' | 'accent' | 'danger' (default: 'success')
  * - children, onClick, disabled, type, className
  */
 export default function Button({
