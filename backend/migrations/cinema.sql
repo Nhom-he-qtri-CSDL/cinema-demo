@@ -284,10 +284,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN user_id SET DEFAULT nextval('public.u
 -- Data for Name: bookings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.bookings (booking_id, user_id, seat_id, bookat) VALUES
-(1, 1, 2, '2025-12-20 09:35:27.257316'),
-(2, 2, 6, '2025-12-20 09:35:27.340017'),
-(3, 1, 10, '2025-12-20 09:35:29.698726');
+-- No sample booking data - users will create their own bookings
 
 
 --
@@ -362,9 +359,9 @@ INSERT INTO public.seats (seat_id, show_id, seat_name, status) VALUES
 --
 
 INSERT INTO public.shows (show_id, movie_id, show_time) VALUES
-(7, 5, '2025-12-18 10:00:00'),
-(8, 5, '2025-12-18 13:30:00'),
-(9, 5, '2025-12-18 17:00:00');
+(7, 5, '2025-12-26 10:00:00'),
+(8, 5, '2025-12-26 13:30:00'),
+(9, 5, '2025-12-26 17:00:00');
 
 
 --
@@ -385,7 +382,7 @@ INSERT INTO public.users (user_id, email, password) VALUES
 -- Name: bookings_booking_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.bookings_booking_id_seq', 3, true);
+SELECT pg_catalog.setval('public.bookings_booking_id_seq', 1, false);
 
 
 --

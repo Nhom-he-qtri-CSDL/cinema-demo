@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"cinema.com/demo/internal/model"
 	"cinema.com/demo/internal/store"
@@ -321,6 +322,11 @@ func (s *bookingService) CancelBooking(userID int, bookingID int) error {
 	// Verify booking belongs to this user
 	if booking.UserID != userID {
 		return fmt.Errorf("unauthorized: booking does not belong to this user")
+	}
+	
+	// Check if show time has passed - cannot cancel past shows
+	if booking.ShowTime.Before(time.Now()) {
+		return fmt.Errorf("cannot cancel booking: show time has already passed")
 	}
 	
 	// Delete booking record

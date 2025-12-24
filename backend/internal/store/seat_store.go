@@ -263,12 +263,14 @@ func (s *seatStore) CreateMultipleBookingsInTx(tx *sql.Tx, userID int, seatIDs [
 	return bookingIDs, nil
 }
 
-// GetBookingByID: Get booking details by ID
+// GetBookingByID: Get booking details by ID with show_time for validation
 func (s *seatStore) GetBookingByID(bookingID int) (*model.Booking, error) {
 	query := `
-		SELECT booking_id, user_id, seat_id, bookat 
-		FROM bookings 
-		WHERE booking_id = $1`
+		SELECT b.booking_id, b.user_id, b.seat_id, b.bookat, sh.show_time
+		FROM bookings b
+		JOIN seats s ON b.seat_id = s.seat_id
+		JOIN shows sh ON s.show_id = sh.show_id
+		WHERE b.booking_id = $1`
 	
 	var booking model.Booking
 	err := s.db.QueryRow(query, bookingID).Scan(
@@ -276,6 +278,7 @@ func (s *seatStore) GetBookingByID(bookingID int) (*model.Booking, error) {
 		&booking.UserID,
 		&booking.SeatID,
 		&booking.BookedAt,
+		&booking.ShowTime,
 	)
 	
 	if err != nil {

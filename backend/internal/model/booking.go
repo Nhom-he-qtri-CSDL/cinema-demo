@@ -7,6 +7,7 @@ type Booking struct {
 	UserID    int       `json:"user_id" db:"user_id"`
 	SeatID    int       `json:"seat_id" db:"seat_id"`
 	BookedAt  time.Time `json:"booked_at" db:"booked_at"`
+	ShowTime  time.Time `json:"show_time" db:"show_time"`
 }
 
 // Unified booking request - supports both single and multi-seat booking
