@@ -49,13 +49,11 @@ body {
   justify-content: center;
   overflow: hidden;
   background: linear-gradient(
-      135deg,
-      rgba(10, 14, 39, 0.6) 0%,
-      rgba(26, 31, 58, 0.6) 50%,
-      rgba(15, 52, 96, 0.6) 100%
-    ),
-    url("/assets/images/avatar_film.gif") center/cover no-repeat;
-  background-attachment: fixed;
+    135deg,
+    rgba(10, 14, 39, 0.95) 0%,
+    rgba(26, 31, 58, 0.95) 50%,
+    rgba(15, 52, 96, 0.95) 100%
+  );
 }
 
 .hero-section::before {

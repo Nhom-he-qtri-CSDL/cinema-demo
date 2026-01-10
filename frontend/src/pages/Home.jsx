@@ -1,9 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import movieApi from "../api/movieApi";
-// import MovieCard from "../components/MovieCard";
-import Snow from "../components/Snow";
+
 import "../styles/home.css";
 
 const Home = () => {
@@ -68,7 +66,7 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      <Snow />
+      
 
       {/* Hero Section */}
       <section className="hero-section">
