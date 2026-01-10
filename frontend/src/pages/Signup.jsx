@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import MovieCarousel from "../components/MovieCarousel";
 import "../styles/auth.css";
 
 const Signup = () => {
@@ -89,11 +88,6 @@ const Signup = () => {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        {/* Left Side - Posters Carousel */}
-        <div className="auth-posters">
-          <MovieCarousel />
-        </div>
-
         {/* Right Side - Form */}
         <div className="auth-form-section">
           <div className="auth-form-wrapper">
@@ -175,12 +169,6 @@ const Signup = () => {
                 {isLoading ? "Creating Account..." : "Sign Up"}
               </button>
             </form>
-
-            <div className="auth-footer">
-              <p>
-                Already have an account? <Link to="/login">Sign in here</Link>
-              </p>
-            </div>
           </div>
         </div>
       </div>

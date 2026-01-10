@@ -113,7 +113,7 @@
 }
 
 .btn-logout {
-  background: linear-gradient(135deg, #ff006e 0%, #ec4899 100%);
+  background: #ca101c;
   color: #fff;
   border: none;
   padding: 8px 20px;
@@ -122,7 +122,7 @@
   font-weight: 600;
   transition: all 0.3s ease;
   font-size: 0.9rem;
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .btn-logout:hover {

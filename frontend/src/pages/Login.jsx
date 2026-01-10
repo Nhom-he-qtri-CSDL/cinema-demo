@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import authApi from "../api/authApi";
-import MovieCarousel from "../components/MovieCarousel";
 import "../styles/auth.css";
 
 const Login = () => {
@@ -22,7 +21,7 @@ const Login = () => {
         email: email, // Backend đã sửa để dùng email field
         password: password,
       };
-      
+
       console.log("Sending login request with:", loginData);
       const response = await authApi.login(loginData);
 
@@ -54,11 +53,6 @@ const Login = () => {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        {/* Left Side - Posters Carousel */}
-        <div className="auth-posters">
-          <MovieCarousel />
-        </div>
-
         {/* Right Side - Form */}
         <div className="auth-form-section">
           <div className="auth-form-wrapper">
@@ -96,12 +90,6 @@ const Login = () => {
                 {isLoading ? "Signing In..." : "Sign In"}
               </button>
             </form>
-
-            <div className="auth-footer">
-              <p>
-                Don't have an account? <Link to="/signup">Create one now</Link>
-              </p>
-            </div>
           </div>
         </div>
       </div>
