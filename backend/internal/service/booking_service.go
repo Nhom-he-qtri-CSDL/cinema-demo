@@ -119,44 +119,76 @@ func (s *bookingService) bookSingleSeat(userID, seatID int) (*model.BookingRespo
 		return nil, fmt.Errorf("seat is no longer available - already booked by another user")
 	}
 
-	// Create booking record
-	bookingID, err := s.seatStore.CreateBookingInTx(tx, userID, seatID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create booking: %w", err)
-	}
-
+	// demo khi chưa dùng concurrency control để đảm bảo tính ACID
 	// Commit the transaction - makes changes permanent
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
+	s.db.Exec(`
+  	INSERT INTO bookings (user_id, seat_id)
+  	VALUES ($1, $2)
+	`, userID, seatID)
+
+	// // Create booking record
+	// bookingID, err := s.seatStore.CreateBookingInTx(tx, userID, seatID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create booking: %w", err)
+	// }
+
+	// // Commit the transaction - makes changes permanent
+	// if err := tx.Commit(); err != nil {
+	// 	return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	// }
 
 	committed = true
 
-	log.Printf("SUCCESS: User %d booked seat %d (%s), booking ID: %d",
-		userID, seatID, seat.SeatName, bookingID)
+	// khi chưa dùng concurrency control để đảm bảo tính ACID
+	log.Printf("SUCCESS: User %d booked seat %d (%s)",
+		userID, seatID, seat.SeatName)
 
-	// Get movie and show details for response
 	show, movie, err := s.getShowAndMovieDetails(seat.ShowID)
 	if err != nil {
 		// Booking was successful, just return basic info
 		log.Printf("Warning: Could not get movie details for response: %v", err)
-		bookingIDPtr := bookingID
 		return &model.BookingResponse{
-			BookingID: &bookingIDPtr,
-			SeatName:  seat.SeatName,
-			Message:   "Seat booked successfully",
+			SeatName: seat.SeatName,
+			Message:  "Seat booked successfully",
 		}, nil
 	}
 
-	bookingIDPtr := bookingID
 	return &model.BookingResponse{
-		BookingID:  &bookingIDPtr,
 		SeatName:   seat.SeatName,
 		MovieTitle: movie.Title,
 		ShowTime:   show.ShowTime.Format("2006-01-02 15:04"),
 		Message: fmt.Sprintf("Seat %s booked successfully for %s at %s",
 			seat.SeatName, movie.Title, show.ShowTime.Format("15:04")),
 	}, nil
+
+	// log.Printf("SUCCESS: User %d booked seat %d (%s), booking ID: %d",
+	// 	userID, seatID, seat.SeatName, bookingID)
+
+	// // Get movie and show details for response
+	// show, movie, err := s.getShowAndMovieDetails(seat.ShowID)
+	// if err != nil {
+	// 	// Booking was successful, just return basic info
+	// 	log.Printf("Warning: Could not get movie details for response: %v", err)
+	// 	bookingIDPtr := bookingID
+	// 	return &model.BookingResponse{
+	// 		BookingID: &bookingIDPtr,
+	// 		SeatName:  seat.SeatName,
+	// 		Message:   "Seat booked successfully",
+	// 	}, nil
+	// }
+
+	// bookingIDPtr := bookingID
+	// return &model.BookingResponse{
+	// 	BookingID:  &bookingIDPtr,
+	// 	SeatName:   seat.SeatName,
+	// 	MovieTitle: movie.Title,
+	// 	ShowTime:   show.ShowTime.Format("2006-01-02 15:04"),
+	// 	Message: fmt.Sprintf("Seat %s booked successfully for %s at %s",
+	// 		seat.SeatName, movie.Title, show.ShowTime.Format("15:04")),
+	// }, nil
 }
 
 func (s *bookingService) GetUserBookings(userID int) ([]model.BookingWithDetails, error) {
@@ -203,24 +235,28 @@ func (s *bookingService) bookMultipleSeats(userID, showID int, seatNames []strin
 
 	// STEP 4: Check availability - ALL seats must be available
 	// This demonstrates "ALL OR NOTHING" atomicity principle
-	var unavailableSeats []string
+	// // sau khi đã dùng concurrency control để đảm bảo tính ACID
+	// var unavailableSeats []string
+
 	var seatIDs []int
 
 	for _, seat := range seats {
-		if seat.Status != model.SeatStatusAvailable {
-			unavailableSeats = append(unavailableSeats, seat.SeatName)
-		}
+		// sau khi đã dùng concurrency control để đảm bảo tính ACID
+		// if seat.Status != model.SeatStatusAvailable {
+		// 	unavailableSeats = append(unavailableSeats, seat.SeatName)
+		// }
 		seatIDs = append(seatIDs, seat.SeatID)
 	}
 
+	// sau khi đã dùng concurrency control để đảm bảo tính ACID
 	// If ANY seat is unavailable, ROLLBACK EVERYTHING
 	// This is the "1 là tất cả, 2 là không có gì cả" principle
-	if len(unavailableSeats) > 0 {
-		log.Printf("Concurrency conflict detected: Seats %v already booked by other users",
-			unavailableSeats)
-		return nil, fmt.Errorf("seats no longer available: %v - already booked by other users",
-			unavailableSeats)
-	}
+	// if len(unavailableSeats) > 0 {
+	// 	log.Printf("Concurrency conflict detected: Seats %v already booked by other users",
+	// 		unavailableSeats)
+	// 	return nil, fmt.Errorf("seats no longer available: %v - already booked by other users",
+	// 		unavailableSeats)
+	// }
 
 	// STEP 5: OPTIMISTIC CONCURRENCY - Bulk update seats to 'booked'
 	// This UPDATE will only succeed if ALL seats are still 'available'
@@ -244,23 +280,22 @@ func (s *bookingService) bookMultipleSeats(userID, showID int, seatNames []strin
 		return nil, fmt.Errorf("seats no longer available - concurrent booking detected")
 	}
 
-	// STEP 6: Create booking records for all seats
-	// All bookings are created in the same transaction - maintaining consistency
-	bookingIDs, err := s.seatStore.CreateMultipleBookingsInTx(tx, userID, seatIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create bookings: %w", err)
-	}
-
-	// STEP 7: COMMIT - Make all changes permanent atomically
-	// Only if we reach here, all operations succeeded
+	// demo khi chưa dùng concurrency control để đảm bảo tính ACID
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
+	for _, seatID := range seatIDs {
+		s.db.Exec(`
+  		INSERT INTO bookings (user_id, seat_id)
+  		VALUES ($1, $2)
+		`, userID, seatID)
+	}
+
 	committed = true
 
-	log.Printf("SUCCESS: User %d booked %d seats %v for show %d, booking IDs: %v",
-		userID, len(seatNames), seatNames, showID, bookingIDs)
+	log.Printf("SUCCESS: User %d booked %d seats %v for show %d",
+		userID, len(seatNames), seatNames, showID)
 
 	// STEP 8: Get movie and show details for consistent user experience
 	// This matches the response format of single-seat booking
@@ -269,20 +304,58 @@ func (s *bookingService) bookMultipleSeats(userID, showID int, seatNames []strin
 		// Booking was successful, just return basic info
 		log.Printf("Warning: Could not get movie details for response: %v", err)
 		return &model.BookingResponse{
-			BookingIDs: bookingIDs,
-			SeatNames:  seatNames,
-			Message:    fmt.Sprintf("Successfully booked %d seats", len(seatNames)),
+			SeatNames: seatNames,
+			Message:   fmt.Sprintf("Successfully booked %d seats", len(seatNames)),
 		}, nil
 	}
 	// Return complete multi-seat booking response with movie info
 	return &model.BookingResponse{
-		BookingIDs: bookingIDs,
 		SeatNames:  seatNames,
 		MovieTitle: movie.Title,
 		ShowTime:   show.ShowTime.Format("2006-01-02 15:04"),
 		Message: fmt.Sprintf("Successfully booked %d seats for %s at %s",
 			len(seatNames), movie.Title, show.ShowTime.Format("15:04")),
 	}, nil
+
+	// // STEP 6: Create booking records for all seats
+	// // All bookings are created in the same transaction - maintaining consistency
+	// bookingIDs, err := s.seatStore.CreateMultipleBookingsInTx(tx, userID, seatIDs)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create bookings: %w", err)
+	// }
+
+	// // STEP 7: COMMIT - Make all changes permanent atomically
+	// // Only if we reach here, all operations succeeded
+	// if err := tx.Commit(); err != nil {
+	// 	return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	// }
+
+	// committed = true
+
+	// log.Printf("SUCCESS: User %d booked %d seats %v for show %d, booking IDs: %v",
+	// 	userID, len(seatNames), seatNames, showID, bookingIDs)
+
+	// // STEP 8: Get movie and show details for consistent user experience
+	// // This matches the response format of single-seat booking
+	// show, movie, err := s.getShowAndMovieDetails(showID)
+	// if err != nil {
+	// 	// Booking was successful, just return basic info
+	// 	log.Printf("Warning: Could not get movie details for response: %v", err)
+	// 	return &model.BookingResponse{
+	// 		BookingIDs: bookingIDs,
+	// 		SeatNames:  seatNames,
+	// 		Message:    fmt.Sprintf("Successfully booked %d seats", len(seatNames)),
+	// 	}, nil
+	// }
+	// // Return complete multi-seat booking response with movie info
+	// return &model.BookingResponse{
+	// 	BookingIDs: bookingIDs,
+	// 	SeatNames:  seatNames,
+	// 	MovieTitle: movie.Title,
+	// 	ShowTime:   show.ShowTime.Format("2006-01-02 15:04"),
+	// 	Message: fmt.Sprintf("Successfully booked %d seats for %s at %s",
+	// 		len(seatNames), movie.Title, show.ShowTime.Format("15:04")),
+	// }, nil
 }
 
 // Helper method to get comprehensive show and movie details
