@@ -113,6 +113,7 @@ const Shows = () => {
     <div className="shows-page">
       <div className="shows-container">
         <h1>Select a Showtime</h1>
+        <p className="shows-subtitle"></p>
 
         {shows.length === 0 ? (
           <div style={{ textAlign: "center", padding: "50px", color: "#999" }}>
