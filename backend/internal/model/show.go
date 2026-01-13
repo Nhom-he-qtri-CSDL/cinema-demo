@@ -7,8 +7,3 @@ type Show struct {
 	MovieID  int       `json:"movie_id" db:"movie_id"`
 	ShowTime time.Time `json:"show_time" db:"show_time"`
 }
-
-type ShowWithMovie struct {
-	Show
-	MovieTitle string `json:"movie_title" db:"title"`
-}

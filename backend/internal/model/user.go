@@ -1,19 +1,26 @@
 package model
 
 type User struct {
-	UserID   int    `json:"user_id" db:"user_id"`
-	Email    string `json:"email" db:"email"`
-	Password string `json:"password,omitempty" db:"password"`
+	ID           int64  `db:"id"`
+	FullName     string `db:"full_name"`
+	Email        string `db:"email"`
+	PasswordHash string `db:"password"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required"` 
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 type LoginResponse struct {
-	UserID  int    `json:"user_id"`
-	Email   string `json:"email"`
-	Token   string `json:"token"`
-	Message string `json:"message"`
+	AccessToken string `json:"access_token"`
+	UserID      int64  `json:"user_id"`
+	Email       string `json:"email"`
+	Name        string `json:"name"`
+}
+
+type RegisterRequest struct {
+	FullName string `json:"full_name" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }

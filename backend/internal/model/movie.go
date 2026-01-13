@@ -7,10 +7,10 @@ type Movie struct {
 	Title       string    `json:"title" db:"title"`
 	Duration    int       `json:"duration" db:"duration"`
 	Description string    `json:"description" db:"description"`
-	Url         string    `json:"url_image" db:"url_image"`
+	UrlImage    string    `json:"url_image" db:"url_image"`
 	Rate        float32   `json:"rate" db:"rate"`
 	Genre       string    `json:"genre" db:"genre"`
 	ReleaseDate time.Time `json:"release_date" db:"release_date"`
 	Director    string    `json:"director" db:"director"`
-	Cast        string    `json:"cast" db:"cast_list"`
+	CastList    string    `json:"cast_list" db:"cast_list"`
 }
