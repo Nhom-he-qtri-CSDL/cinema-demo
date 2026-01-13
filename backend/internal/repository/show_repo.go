@@ -21,7 +21,10 @@ func NewShowRepository(db *sql.DB) ShowRepository {
 }
 
 func (s *showRepo) GetShowByMovieID(ctx context.Context, movie_id int) ([]model.Show, error) {
-	query := `SELECT show_id, movie_id, show_time FROM shows WHERE movie_id = $1 ORDER BY show_time`
+	query := `SELECT show_id, s.movie_id, m.title, show_time 
+		FROM shows s
+		JOIN movies m on s.movie_id = m.movie_id
+		WHERE s.movie_id = $1 ORDER BY show_time`
 
 	rows, err := s.db.QueryContext(ctx, query, movie_id)
 	if err != nil {
@@ -32,7 +35,7 @@ func (s *showRepo) GetShowByMovieID(ctx context.Context, movie_id int) ([]model.
 	var shows []model.Show
 	for rows.Next() {
 		var show model.Show
-		err := rows.Scan(&show.ShowID, &show.MovieID, &show.ShowTime)
+		err := rows.Scan(&show.ShowID, &show.MovieID, &show.MovieTitle, &show.ShowTime)
 		if err != nil {
 			return nil, err
 		}

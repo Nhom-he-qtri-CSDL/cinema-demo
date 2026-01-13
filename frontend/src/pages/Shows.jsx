@@ -113,9 +113,6 @@ const Shows = () => {
     <div className="shows-page">
       <div className="shows-container">
         <h1>Select a Showtime</h1>
-        <p className="shows-subtitle">
-          Choose your preferred show for Movie ID: {movieId}
-        </p>
 
         {shows.length === 0 ? (
           <div style={{ textAlign: "center", padding: "50px", color: "#999" }}>
