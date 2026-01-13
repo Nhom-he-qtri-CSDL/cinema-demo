@@ -22,7 +22,7 @@ func NewTicketRepository(db *sql.DB) TicketRepository {
 
 func (t *ticketRepo) GetTicketByUserID(ctx context.Context, user_id int) ([]model.GetTicketByUserIdResponse, error) {
 	query := `SELECT 
-			b.booking_id, b.bookat,
+			b.booking_id, sh.show_id, b.bookat,
 			s.seat_name, m.title, sh.show_time
 		FROM bookings b
 		JOIN seats s ON b.seat_id = s.seat_id
@@ -40,7 +40,7 @@ func (t *ticketRepo) GetTicketByUserID(ctx context.Context, user_id int) ([]mode
 	var tickets []model.GetTicketByUserIdResponse
 	for rows.Next() {
 		var ticket model.GetTicketByUserIdResponse
-		err := rows.Scan(&ticket.BookingID, &ticket.BookAt, &ticket.SeatName, &ticket.Title, &ticket.ShowTime)
+		err := rows.Scan(&ticket.BookingID, &ticket.ShowID, &ticket.BookAt, &ticket.SeatName, &ticket.Title, &ticket.ShowTime)
 		if err != nil {
 			return nil, err
 		}

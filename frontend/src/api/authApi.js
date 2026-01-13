@@ -3,7 +3,7 @@ import axiosClient from "./axiosClient";
 const authApi = {
   login: (credentials) => {
     // Đăng nhập bằng email
-    return axiosClient.post("/login", {
+    return axiosClient.post("/auth/login", {
       email: credentials.email,
       password: credentials.password,
     });

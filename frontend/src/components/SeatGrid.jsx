@@ -8,16 +8,16 @@ function SeatGrid({ rows = 5, cols = 8, onSeatsChange, seatsData = [] }) {
   const { selectedSeats, addSeat, removeSeat } = useContext(BookingContext);
 
   // toggleSeat: bật/tắt trạng thái chọn cho ghế có id
-  const toggleSeat = (seatName, isBooked) => {
+  const toggleSeat = (seatId, isBooked) => {
     if (isBooked) {
       // Không cho phép chọn ghế đã được đặt
       return;
     }
 
-    if (selectedSeats.includes(seatName)) {
-      removeSeat(seatName);
+    if (selectedSeats.includes(seatId)) {
+      removeSeat(seatId);
     } else {
-      addSeat(seatName);
+      addSeat(seatId);
     }
   };
 
@@ -41,9 +41,9 @@ function SeatGrid({ rows = 5, cols = 8, onSeatsChange, seatsData = [] }) {
             <Seat
               key={seat.seat_id}
               text={seat.seat_name}
-              selected={selectedSeats.includes(seat.seat_name)}
+              selected={selectedSeats.includes(seat.seat_id)}
               booked={isBooked}
-              onClick={() => toggleSeat(seat.seat_name, isBooked)}
+              onClick={() => toggleSeat(seat.seat_id, isBooked)}
             />
           );
         })}

@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { BookingContext } from "../context/BookingContext";
-import showApi from "../api/showApi";
+import movieApi from "../api/movieApi";
+import seatApi from "../api/seatApi";
 import "../styles/shows.css";
 
 const Shows = () => {
@@ -19,8 +20,9 @@ const Shows = () => {
     const fetchShows = async () => {
       try {
         setLoading(true);
-        const response = await showApi.getShows(movieId);
-        setShows(response.shows || []);
+        const response = await movieApi.getShows(movieId);
+        // Backend trả về { response: [...] }
+        setShows(response.response || []);
         setError(null);
       } catch (err) {
         console.error("Error fetching shows:", err);

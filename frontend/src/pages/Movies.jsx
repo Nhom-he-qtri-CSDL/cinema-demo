@@ -2,7 +2,6 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import movieApi from "../api/movieApi";
-import showApi from "../api/showApi";
 import "../styles/movies.css";
 
 const Movies = () => {
@@ -22,17 +21,18 @@ const Movies = () => {
       try {
         setLoading(true);
         const response = await movieApi.getMovies();
-        const movies = response.movies || [];
+        // Backend trả về { response: [...] }
+        const movies = response.response || [];
         setAllMovies(movies);
 
         // Fetch shows for each movie
         const moviesWithShowsData = await Promise.all(
           movies.map(async (movie) => {
             try {
-              const showsResponse = await showApi.getShows(movie.movie_id);
+              const showsResponse = await movieApi.getShows(movie.movie_id);
               return {
                 ...movie,
-                showtimes: showsResponse.shows || [],
+                showtimes: showsResponse.response || [],
               };
             } catch (error) {
               console.error(

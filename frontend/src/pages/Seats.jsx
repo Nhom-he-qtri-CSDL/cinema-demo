@@ -31,7 +31,8 @@ function Seats() {
     try {
       setLoading(true);
       const response = await seatApi.getSeats(showId);
-      setSeats(response.seats || []);
+      // Backend trả về { response: [...] }
+      setSeats(response.response || []);
 
       // Set movie info from current show
       if (currentShow.movie_title) {
@@ -81,17 +82,28 @@ function Seats() {
     try {
       setBooking(true);
 
-      // Call booking API with show_id and seat names
-      const response = await bookingApi.bookMultipleSeats(
-        parseInt(showId),
-        selectedSeats
-      );
+      // selectedSeats giờ đã chứa seat IDs (integers) rồi
+      // Backend expects: { "seats": [6, 9] } (array of integers)
+      if (selectedSeats.length === 0) {
+        alert("Vui lòng chọn ít nhất một ghế!");
+        return;
+      }
+
+      // Call booking API with seat IDs - JWT token tự động gửi qua header
+      const response = await bookingApi.bookSeats(selectedSeats);
+
+      // Get seat names for display
+      const selectedSeatNames = selectedSeats.map((seatId) => {
+        const seat = seats.find((s) => s.seat_id === seatId);
+        return seat ? seat.seat_name : `Seat ${seatId}`;
+      });
 
       // Create complete booking data
       const bookingInfo = {
         movie: movieInfo,
         show: currentShow,
-        seats: selectedSeats,
+        seats: selectedSeatNames, // For display
+        seatIds: selectedSeats, // Original IDs
         totalPrice: selectedSeats.length * 100000, // 100,000 VND per seat
         user: user,
         bookingDate: new Date().toLocaleDateString("vi-VN"),
@@ -257,7 +269,14 @@ function Seats() {
           </h3>
           {selectedSeats.length > 0 ? (
             <div>
-              <p style={{ marginBottom: "12px" }}>{selectedSeats.join(", ")}</p>
+              <p style={{ marginBottom: "12px" }}>
+                {selectedSeats
+                  .map((seatId) => {
+                    const seat = seats.find((s) => s.seat_id === seatId);
+                    return seat ? seat.seat_name : `#${seatId}`;
+                  })
+                  .join(", ")}
+              </p>
               <p
                 style={{
                   marginTop: "10px",

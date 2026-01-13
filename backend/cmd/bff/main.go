@@ -64,22 +64,42 @@ func main() {
 			if err := apiRepo.Insert(clientType, hash, maxReq, winSec); err != nil {
 				log.Fatal(err)
 			}
+			if clientType == "web" {
 
-			// Append to .env
-			envLine := fmt.Sprintf("API_KEY_%s=%s\n", strings.ToUpper(clientType), plaintext)
+				// Append to .env
+				envLine := fmt.Sprintf("\nVITE_API_KEY=%s\n", plaintext)
 
-			f, err := os.OpenFile("../../../.env", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-			if err != nil {
-				log.Fatal(err)
+				f, err := os.OpenFile("../../../frontend/.env", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close()
+
+				if _, err := f.WriteString(envLine); err != nil {
+					log.Fatal(err)
+				}
+
+				log.Printf("API key created successfully for client: %s", clientType)
+				log.Printf("VITE_API_KEY=%s", plaintext)
+
+			} else {
+
+				// Append to .env
+				envLine := fmt.Sprintf("\nAPI_KEY_%s=%s\n", strings.ToUpper(clientType), plaintext)
+
+				f, err := os.OpenFile("../../../frontend/.env", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close()
+
+				if _, err := f.WriteString(envLine); err != nil {
+					log.Fatal(err)
+				}
+
+				log.Printf("API key created successfully for client: %s", clientType)
+				log.Printf("API_KEY_%s=%s", strings.ToUpper(clientType), plaintext)
 			}
-			defer f.Close()
-
-			if _, err := f.WriteString(envLine); err != nil {
-				log.Fatal(err)
-			}
-
-			log.Printf("API key created successfully for client: %s", clientType)
-			log.Printf("API_KEY_%s=%s", strings.ToUpper(clientType), plaintext)
 		} else {
 			log.Printf("API key already exists for client: %s", clientType)
 		}
@@ -100,6 +120,9 @@ func main() {
 
 	// Chạy server bình thường
 	r := gin.Default()
+
+	// Enable CORS for all routes
+	r.Use(middleware.CORSMiddleware())
 
 	api := r.Group("/api")
 

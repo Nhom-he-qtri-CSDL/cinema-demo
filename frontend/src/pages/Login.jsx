@@ -25,16 +25,18 @@ const Login = () => {
       console.log("Sending login request with:", loginData);
       const response = await authApi.login(loginData);
 
-      // Backend trả về response trực tiếp, không có wrapper success/data
-      if (response && response.user_id) {
+      // Backend trả về { response: { access_token, user_id, email, name } }
+      if (response && response.response) {
+        const loginResponse = response.response;
+
         // Lưu thông tin user và token từ response
         const userData = {
-          userID: response.user_id,
-          id: response.user_id,
-          email: response.email,
-          token: response.token,
-          fullName: response.email.split("@")[0], // Dùng phần đầu email làm display name
-          username: response.email, // Để tương thích với code cũ
+          userID: loginResponse.user_id,
+          id: loginResponse.user_id,
+          email: loginResponse.email,
+          token: loginResponse.access_token,
+          fullName: loginResponse.name || loginResponse.email.split("@")[0],
+          username: loginResponse.email,
         };
 
         login(userData);

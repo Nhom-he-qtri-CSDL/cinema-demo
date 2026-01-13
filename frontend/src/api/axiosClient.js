@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+console.log("🌐 API Base URL:", API_BASE_URL);
+console.log("🔑 API Key loaded:", API_KEY ? "✅ Yes" : "❌ No");
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
@@ -11,16 +15,13 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   (config) => {
-    // Ưu tiên JWT token
+    if (API_KEY) {
+      config.headers["X-API-Key"] = API_KEY;
+    }
+
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Fallback với X-User-ID header để tương thích
-    const userID = localStorage.getItem("userID");
-    if (userID) {
-      config.headers["X-User-ID"] = userID;
     }
 
     return config;
@@ -41,6 +42,12 @@ axiosClient.interceptors.response.use(
       localStorage.removeItem("user");
       window.location.href = "/login";
     }
+
+    // Handle rate limiting
+    if (error.response?.status === 429) {
+      alert("⚠️ Bạn đã gửi quá nhiều request. Vui lòng thử lại sau.");
+    }
+
     return Promise.reject(error);
   }
 );

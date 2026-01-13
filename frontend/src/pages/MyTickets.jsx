@@ -33,7 +33,8 @@ function MyTickets() {
       try {
         setLoading(true);
         const response = await bookingApi.getMyBookings();
-        setBookings(response.bookings || []);
+        // Backend trả về { response: [...] }
+        setBookings(response.response || []);
         setError(null);
       } catch (err) {
         console.error("Error fetching bookings:", err);
@@ -113,16 +114,32 @@ function MyTickets() {
     );
   }
 
-  // Only show bookings from backend (source of truth)
-  const allTickets = bookings.map((booking) => ({
-    id: booking.booking_id,
-    movieName: booking.movie_title,
-    showTime: new Date(booking.show_time).toLocaleString("vi-VN"),
-    seats: [booking.seat_name],
-    customerName: user?.username || user?.email || "Khách hàng",
-    bookingDate: new Date(booking.booked_at).toLocaleDateString("vi-VN"),
-    totalPrice: 100000, // Backend doesn't return price, using default
-  }));
+  // Group bookings by showId to display multiple seats in one card
+  const groupedBookings = bookings.reduce((acc, booking) => {
+    const showId = booking.show_id;
+
+    if (!acc[showId]) {
+      acc[showId] = {
+        showId: showId,
+        movieName: booking.title,
+        showTime: new Date(booking.show_time).toLocaleString("vi-VN"),
+        seats: [],
+        bookingIds: [],
+        customerName: user?.username || user?.email || "Khách hàng",
+        bookingDate: new Date(booking.book_at).toLocaleDateString("vi-VN"),
+        totalPrice: 0,
+      };
+    }
+
+    acc[showId].seats.push(booking.seat_name);
+    acc[showId].bookingIds.push(booking.booking_id);
+    acc[showId].totalPrice += 100000; // 100k per seat
+
+    return acc;
+  }, {});
+
+  // Convert to array and sort by show time
+  const allTickets = Object.values(groupedBookings);
 
   return (
     <>
@@ -137,7 +154,7 @@ function MyTickets() {
           <div className="my-tickets__grid">
             {allTickets.map((ticket) => (
               <Transparent_card
-                key={ticket.id}
+                key={ticket.showId}
                 className="my-tickets__ticket-card"
               >
                 <div className="my-tickets__ticket-info">
@@ -205,14 +222,17 @@ function MyTickets() {
                   )}
                 </div>
 
-                {/* Cancel button */}
+                {/* Cancel button - Cancel all seats in this show */}
                 <Button
                   variant="danger"
                   className="my-tickets__cancel-button"
-                  onClick={() => handleCancelBooking(ticket.id)}
-                  disabled={cancelling === ticket.id}
+                  onClick={() => handleCancelBooking(ticket.bookingIds[0])}
+                  disabled={cancelling === ticket.bookingIds[0]}
+                  title={`Hủy ${ticket.seats.length} ghế`}
                 >
-                  {cancelling === ticket.id ? "Đang hủy..." : "🗑️ Hủy vé"}
+                  {cancelling === ticket.bookingIds[0]
+                    ? "Đang hủy..."
+                    : `🗑️ Hủy vé (${ticket.seats.length} ghế)`}
                 </Button>
               </Transparent_card>
             ))}

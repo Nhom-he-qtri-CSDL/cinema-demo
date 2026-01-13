@@ -1,32 +1,28 @@
 import axiosClient from "./axiosClient";
 
 const bookingApi = {
-  bookSeat: (seatId) => {
-    return axiosClient.post("/book", {
-      seat_id: seatId,
-    });
-  },
-  bookMultipleSeats: (showId, seatNames) => {
-    if (!showId) {
-      return Promise.reject(new Error("showId is required"));
-    }
-    if (!seatNames || seatNames.length === 0) {
+  // POST /api/book - Đặt ghế (1 hoặc nhiều ghế)
+  // Backend expects: { "seats": [6, 9] } (array of seat IDs)
+  // JWT token tự động gửi qua header Authorization
+  bookSeats: (seatIds) => {
+    // Accept cả số đơn hoặc array
+    const seats = Array.isArray(seatIds) ? seatIds : [seatIds];
+
+    if (seats.length === 0) {
       return Promise.reject(new Error("At least 1 seat must be selected"));
     }
-    if (!Array.isArray(seatNames)) {
-      return Promise.reject(new Error("seatNames must be an array"));
-    }
 
     return axiosClient.post("/book", {
-      show_id: showId,
-      seats: seatNames, // Array: ["A5", "A6", "A7"]
+      seats: seats, // Array of seat IDs: [6, 9]
     });
   },
 
+  // GET /api/tickets - Lấy danh sách vé đã đặt (protected route)
   getMyBookings: () => {
-    return axiosClient.get("/my-bookings");
+    return axiosClient.get("/tickets");
   },
 
+  // DELETE /api/cancel/:bookingId - Hủy booking
   cancelBooking: (bookingId) => {
     if (!bookingId) {
       return Promise.reject(new Error("bookingId is required"));
