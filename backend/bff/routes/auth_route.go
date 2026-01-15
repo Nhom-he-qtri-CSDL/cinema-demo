@@ -28,9 +28,9 @@ func RegisterAuthRoutes(r *gin.RouterGroup, db *sql.DB) {
 }
 
 func RegisterLoginRoute(r *gin.RouterGroup, ac *auth.AuthController, db *sql.DB) {
-	r.POST("/login", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), ac.Login)
+	r.POST("/login", middleware.ApiKeyMiddleware(db), ac.Login)
 }
 
 func RegisterSignUpRoute(r *gin.RouterGroup, ac *auth.AuthController, db *sql.DB) {
-	r.POST("/register", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), ac.Register)
+	r.POST("/register", middleware.ApiKeyMiddleware(db), ac.Register)
 }

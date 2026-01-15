@@ -27,5 +27,5 @@ func RegisterTicketRoutes(r *gin.RouterGroup, db *sql.DB) {
 }
 
 func RegisterGetTicketRoute(r *gin.RouterGroup, t *ticket.TicketController, db *sql.DB) {
-	r.GET("", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), t.GetTicketByUserID)
+	r.GET("", middleware.ApiKeyMiddleware(db), t.GetTicketByUserID)
 }

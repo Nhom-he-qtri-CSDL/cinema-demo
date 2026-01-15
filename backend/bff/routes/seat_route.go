@@ -27,5 +27,5 @@ func RegisterSeatRoutes(r *gin.RouterGroup, db *sql.DB) {
 }
 
 func RegisterGetSeatRoute(r *gin.RouterGroup, s *seat.SeatController, db *sql.DB) {
-	r.GET("", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), s.GetSeatByShowID)
+	r.GET("", middleware.ApiKeyMiddleware(db), s.GetSeatByShowID)
 }

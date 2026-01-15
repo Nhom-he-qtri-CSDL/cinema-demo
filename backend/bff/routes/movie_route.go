@@ -27,5 +27,5 @@ func RegisterMovieRoutes(r *gin.RouterGroup, db *sql.DB) {
 }
 
 func RegisterGetMovieRoute(r *gin.RouterGroup, m *movie.MovieController, db *sql.DB) {
-	r.GET("", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), m.GetMovie)
+	r.GET("", middleware.ApiKeyMiddleware(db), m.GetMovie)
 }

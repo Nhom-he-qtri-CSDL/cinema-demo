@@ -27,5 +27,5 @@ func RegisterBookRoutes(r *gin.RouterGroup, db *sql.DB) {
 }
 
 func RegisterBookRoute(r *gin.RouterGroup, b *book.BookController, db *sql.DB) {
-	r.POST("", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), b.Book)
+	r.POST("", middleware.ApiKeyMiddleware(db), b.Book)
 }

@@ -27,5 +27,5 @@ func RegisterShowRoutes(r *gin.RouterGroup, db *sql.DB) {
 }
 
 func RegisterGetShowRoute(r *gin.RouterGroup, s *show.ShowController, db *sql.DB) {
-	r.GET("", middleware.ApiKeyMiddleware(db), middleware.RateLimit(), s.GetShowByMovieID)
+	r.GET("", middleware.ApiKeyMiddleware(db), s.GetShowByMovieID)
 }
