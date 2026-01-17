@@ -391,11 +391,7 @@ COPY public.api_keys (id, client_id, key_hash, description, is_active, created_a
 -- Data for Name: bookings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.bookings (booking_id, user_id, seat_id, bookat) FROM stdin;
-160	6	9	2026-01-15 18:58:24.741754+07
-161	6	10	2026-01-15 18:58:24.741754+07
-162	6	11	2026-01-15 18:58:24.741754+07
-\.
+
 
 
 --
@@ -513,9 +509,9 @@ COPY public.seats (seat_id, show_id, seat_name, status) FROM stdin;
 94	10	E1	available
 95	10	E2	available
 96	10	E3	available
-9	7	B4	booked
-10	7	A5	booked
-11	7	B5	booked
+9	7	B4	available
+10	7	A5	available
+11	7	B5	available
 97	10	E4	available
 98	10	E5	available
 99	10	E6	available
